@@ -3,11 +3,11 @@ Makefile.PL
 LICENSE
 MANIFEST
 README
-CHANGES
+Changes
 t/00load.t
 t/01constructor.t
 t/02accessor.t
 t/03set.t
 t/04overload.t
 t/05ondate.t
-META.yml                                 Module meta-data (added by MakeMaker)
+META.yml                                

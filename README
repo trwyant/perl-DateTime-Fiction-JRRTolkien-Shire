@@ -1,202 +1,321 @@
 NAME
-    Date::Tolkien::Shire.pm
+    DateTime::Fiction::JRRTolkien::Shire.pm
+
+SYNOPSIS
+        use DateTime::Fiction::JRRTolkien::Shire;
+
+        # Constructors
+        my $shire = DateTime::Fiction::JRRTolkien::Shire->new(year => 1419,
+                                                              month => 'Rethe',
+                                                              day => 25);
+        my $shire = DateTime::Fiction::JRRTolkien::Shire->new(year => 1419,
+                                                              month => 3,
+                                                              day => 25);
+        my $shire = DateTime::Fiction::JRRTolkien::Shire->new(year => 1419,
+                                                              holiday => '2 Lithe');
+
+        my $shire = DateTime::Fiction::JRRTolkien::Shire->from_epoch(epoch = $time);
+        my $shire = DateTime::Fiction::JRRTolkien::Shire->today; # same as from_epoch(epoch = time());
+
+        my $shire = DateTime::Fiction::JRRTolkien::Shire->from_object(object => $some_other_DateTime_object);
+        my $shire = DateTime::Fiction::JRRTolkien::Shire->from_day_of_year(year => 1420,
+                                                                           day_of_year => 182);
+        my $shire2 = $shire->clone;
+
+        # Accessors
+        $year = $shire->year;
+        $month = $shire->month;            # 1 - 12, or 0 on a holiday
+        $month_name = $shire->month_name;
+        $day = $shire->day;                # 1 - 30, or 0 on a holiday
+
+        $dow = $shire->day_of_week;        # 1 - 7, or 0 on certain holidays
+        $day_name = $shire->day_name;
+
+        $holiday = $shire->holiday;
+        $holiday_name = $shire->holiday_name;
+
+        $leap = $shire->is_leap_year;
+
+        $time = $shire->epoch;
+        @rd = $shire->utc_rd_values;
+
+        # Set Methods
+        $shire->set(year => 7463,
+                    month => 5,
+                    day => 3);
+        $shire->set(year => 7463,
+                    holiday => 6);
+        $shire->truncate(to => 'month');
+
+        # Comparisons
+        $shire < $shire2;
+        $shire == $shire2;
+
+        # Strings
+        print "$shire1\n"; # Prints Sunday 25 Rethe 1419
+
+        # On this date in history
+        print $shire->on_date;
 
 DESCRIPTION
-    This is an object-oriented module to convert dates into the Shire
-    Calender as presented in the Lord of the Rings by J. R. R. Tolkien. It
-    includes converting epoch time to the Shire Calendar (you can also get
-    epoch time back), comparison operators, and a method to print a
-    formatted string containing that does something to the effect of on this
-    date in history -- pulling events from the Lord of the Rings.
+    Implementation of the calendar used by the hobbits in J.R.R. Tolkien's
+    exceptional novel The Lord of The Rings, as described in Appendix D of
+    that book (except where noted). The calendar has 12 months, each with 30
+    days, and 5 holidays that are not part of any month. A sixth holiday,
+    Overlithe, is added on leap years. The holiday Midyear's Day (and the
+    Overlithe on a leap year) is not part of any week, which means that the
+    year always starts on Sterday.
 
-    The biggest use I can see in this thing is in a startup script or
-    possible to keep yourself entertained in an otherwise boring app that
-    includes a date. If you have any other ideas/suggestions/uses, etc.,
-    please let me know. I am curious to see how this gets used (if it gets
-    used that is).
+    This module is a follow on to the Date::Tolkien::Shire module, and is
+    rewritten to support Dave Rolsky and company's DateTime module. The
+    DateTime module must be installed for this module to work. Unlike the
+    DateTime module, which includes time support, this calendar does not
+    have any mechanisms for giving a shire time (mostly because I've never
+    quite figured out what it should look like). Time is maintained,
+    however, so that objects can be converted from other calendars to the
+    shire calendar and then converted back without their time components
+    being lost. The same is true of time zones.
 
-AUTHOR
-    Tom Braun <tbraun@pobox.com>
+METHODS
+    Most of these methods mimic their corresponding DateTime methods in
+    functionality. For additional information on these methods, see the
+    DateTime documentation.
 
-DATE
-    February 2001
+  Constructors
+    * new( ... )
+        This method takes a year, month, and day parameter, or a year and
+        holiday parameter. The year can be any value. The month can be
+        specified with a string giving the name of the month (the same
+        string that would be returned by month_name, with the first letter
+        capitalized and the rest in lower case) or by giving the numerical
+        value for the month, between 1 and 12. The day should always be
+        between 1 and 30. If a holiday is given instead of a day and month,
+        it should be the name of the holiday as returned by holiday_name
+        (with the first letter of each word capitalized) or a value between
+        1 and 6. The 1 through 6 numbers map to holidays as follows: 1 => 2
+        Yule 2 => 1 Lithe 3 => Midyear's Day 4 => Overlithe # Leap years
+        only 5 => 2 Lithe 6 => 1 Yule
 
-METHOD REFERENCE
-    Note: I have tried to make these as friendly as possible when an error
-    occurs. As a consequence, none of them die, croak, etc. All of these
-    return 0 on error, but as 0 can be a valid output in a couple cases (the
-    day of the month for a holiday, for example), the error method should
-    always be checked to see if an error has occured. As long as you set a
-    date before you try to use it, you should be ok.
+        The new method will also take parameters for hour, minute, second,
+        nanosecond, time_zone and locale. If given, these parameters will be
+        stored in case the object is converted to another class that
+        supports times.
 
-  new
+        If a day is not given, it will default to 1. If neither a day or
+        month is given, the date will default to 2 Yule, the first day of
+        the year.
 
-        $shiredate = Date::Tolkien::Shire->new;
-        $shiredate = Date::Tolkien::Shire->new(time);
-        $shiredate = Date::Tolkien::Shire->new($another_shiredate);
+    * from_epoch( epoch => $epoch, ... )
+        Same as in DateTime.
 
-    The constructor new can take zero or one parameter. Either a new object
-    can be created without setting a specific date (the zero parameter
-    version), or an object can be created and the date set to either a
-    current shire date, or an epoch time such as is returned by the time
-    function. For specifics on setting dates, see the 'set_date' function.
+    * now( ... )
+        Same as in DateTime. Note that this is equivalent to from_epoch(
+        epoch => time() );
 
-  error
+    * today( ... )
+        Same as in DateTime.
 
-        $the_error = $shiredate->error;
-        $the_error = Date::Tolkien::Shire->error;
+    * from_object( object => $object, ... )
+        Same as in DateTime. Takes any other DateTime calendar object and
+        converts it to a DateTime::Fiction::JRRTolkien::Shire object.
 
-    This returns a null string if everything in the previous method call was
-    as it should be, and a string contain a description of what happened if
-    an error occurred.
+    * last_day_of_month( ... )
+        Same as in DateTime. Like the new constructor, but it does not take
+        a day parameter. Instead, the day is set to 30, which is the last
+        day of any month in the shire calendar. A holiday parameter should
+        not be used with this method. Use new instead.
 
-  set_date
+    * from_day_of_year( year => $year, day_of_year => $yday)
+        Same as in DateTime. Gets the date from the given year and day of
+        year, both of which must be given. Hour, minute, second, time_zone,
+        etc. parameters may also be given, and will be passed to the
+        underlying DateTime object, just like in new.
 
-    This method takes either the seconds from the start of the epoch (like
-    what time returns) or another shire date object, and sets the date of
-    the object in question equal to that date. If the object previously
-    contained a date, it will be overwritten. Localtime, rather than utc, is
-    used in converting from epoch date.
+    * clone
+        Creates a new Shire object that is the same date (and underlying
+        time) as the calling object.
 
-    Please see the note below on calculating the year if your curious how I
-    arrived by that.
+  Get Methods
+    * year
+        returns the year.
 
-  time_in_seconds
+    * month
+        Returns the month number, from 1 to 12. If the date is a holiday, a
+        0 is returned for the month.
 
-        $epoch_time = $shire_date->time_in_seconds
+    * month_name
+        Returns the name of the month. If the date is a holiday, an empty
+        string is returned.
 
-    Returns the epoch time (with 0 for hours, minutes, and seconds) of a
-    given shire date. This relies on the library Time::Local, so the caveats
-    and error handling with that module apply to this method as well.
+    * day_of_month, day, mday
+        Returns the day of the current month, from 1 to 30. If the date is a
+        holiday, 0 is returned.
 
-  weekday
+    * day_of_week, wday, dow
+        Returns the day of the week from 1 to 7. If the day is not part of
+        any week (Midyear's Day or the Overlithe), 0 is returned.
 
-        $day_of_week = $shiredate->weekday;
+    * day_name
+        Returns the name of the day of the week, or an empty string if the
+        day is not part of any week.
 
-    This function returns the day of the week using the more modern names in
-    use during the War of the Ring and given in the Lord of the Rings
-    Appendix D. If the day in question is not part of any week (Midyear day
-    and the Overlithe), then the null string is returned.
+    * day_name_trad
+        Like day_name, but returns the more traditional name of the days of
+        the week, as defined in Appendix D.
 
-  trad_weekday (for traditional weekday)
+    * day_of year, doy
+        Returns the day of the year, from 1 to 366
 
-        $day_of_week = $shiredate->trad_weekday
+    * holiday
+        Returns the holiday number (given in the description of the new
+        constructor). If the day is not a holiday, 0 is returned.
 
-    This function returns the day of the week using the archaic forms, the
-    oldest forms found in the Yellowskin of Tuckborough (also given in
-    Appendix D). If the day in question is not part of any week (Midyear day
-    and the Overlithe), then the null string is returned.
+    * holiday_name
+        Returns the name of the holiday. If the day is not a holiday, an
+        empty string is returned.
 
-  month
+    * is_leap_year
+        Returns 1 if the year is a leap year, and 0 otherwise.
 
-        $month = $shiredate->month;
+        Leap years are given the same rule as the Gregorian calendar. Every
+        four years is a leap year, except the first year of the century,
+        which is not a leap year. However, every fourth century (400 years),
+        the first year of the century is a leap year (every 4, except every
+        100, except every 400). This is a slight change from the calendar
+        descibed in Appendix D, which uses the rule of once every 4 years,
+        except every 100 years (the same as in the Julian calendar). Given
+        some uncertainty about how many years have passed since the time in
+        Lord of the Rings (see note below), and the expectations of most
+        people that the years match up with what they're used to, I have
+        changed this rule for this implementation. However, this does mean
+        that this calendar implementation is not strictly that described in
+        Appendix D.
 
-    Returns the month of the date in question, or the null string if the day
-    is a holiday, since holidays are not part of any month.
+    * week
+        A two element array, where the first is the week_year and the latter
+        is the week_number.
 
-  day
+    * week_year
+        This is always the same as the year in the shire calendar, but is
+        present for compatability with other DateTime objects.
 
-        $day_of_month = $self->{monthday};
+    * week_number
+        Returns the week of the year.
 
-    returns the day of the month of the day in question, or 0 in the case of
-    a holiday, since they are not part of any month
+    * epoch
+        Returns the epoch of the given object, just like in DateTime.
 
-  holiday
+    * hires_epoch
+        Returns the epoch as a floating point number, with the fractional
+        portion for fractional seconds. Functions the same as in DateTime.
 
-        $holiday = $shiredate->holiday;
+    * utc_rd_values
+        Returns the UTC rata die days, seconds, and nanoseconds. Ignores
+        fractional seconds. This is the standard method used by other
+        methods to convert the shire calendar to other calendars. See the
+        DateTime documentation for more information.
 
-    If the day in question is a holiday, returns a string which holiday it
-    is: "1 Yule", "2 Yule" (first day of the new year), "1 Lithe",
-    "Midyear's day", "Overlithe", or "2 Lithe". If the day is not a holiday,
-    the null string is returned
+    * utc_rd_as_seconds
+        Returns the UTC rata die days entirely as seconds.
 
-  year
+    * on_date
+        Prints out the current day. If the day has some events that
+        transpired on it (as defined in Appendix B of the Lord of the
+        Rings), those events are also printed. This can be fun to put in a
+        .bashrc or .cshrc. Try
 
-        $shire_year = $shiredate->year;
+            perl -MDateTime::Fiction::JRRTolkien::Shire 
+              -le 'print DateTime::Fiction::JRRTolkien::Shire->now->on_date;'
 
-    Returns the year of the shire date in question. See the note on year
-    calculaton below if you want to see how I figured this.
+  Set Methods
+    * Set( ... )
+        Allows the day, month, and year to be changed. It takes any
+        parameters allowed by new constructor, including all those supported
+        by DateTime and the holiday parameter, except for time_zone. This is
+        used in much the same way as new, with the exception that any
+        parameters not given will be left as is.
 
-  Operators
+        All parameters are optional, with the current values inserted if the
+        values are not supplied. However, with holidays not falling in any
+        month, it is recommended that a day and month always be given
+        together. Otherwise, unanticipated results may occur.
 
-    The following comparison operators are available: $shiredate1 <
-    $shiredate2 $shiredate1 lt $shiredate2 $shiredate1 <= $shiredate2
-    $shiredate1 le $shiredate2 $shiredate1 > $shiredate2 $shiredate1 gt
-    $shiredate2 $shiredate1 >= $shiredate2 $shiredate1 ge $shiredate2
-    $shiredate1 == $shiredate2 $shiredate1 eq $shiredate2 $shiredate1 !=
-    $shiredate2 $shiredate1 ne $shiredate2 $shiredate1 <=> $shiredate2
-    $shiredate1 cmp $shiredate2
+        As in the new constructor, time parameters have no effect on the
+        shire dates returned. However, they are maintained in case the
+        object is converted to another calendar which supports time.
 
-    You can only compare on shire date to another (no apples to oranges
-    here). In this context both the numeric and string operators perform the
-    exact same function. Like the standard operators, all but <=> and cmp
-    return 1 if the condition is true and the null string if it is false.
-    <=> and cmp return -1 if the left operand is less than the right one, 0
-    if the two operands are equal, and 1 if the left operand is greater than
-    the right one.
+    * Truncate( ... )
+        Same as in DateTime. If the date is a holiday, a truncation to
+        either 'month' or 'day' is equivalent. Otherwise, this functions as
+        specified in the DateTime object.
 
-    Additionally, you can view a shire date as a string:
+    * set_time_zone( $tz )
+        Just like in DateTime. This method has no effect on the shire
+        calendar, but be stored with the date if it is ever converted to
+        another calendar with time support.
 
-        # prints something like 'Monday 28 Rethe 7465'
-        print $shiredate;
+  Comparisons and Stringification
+        All comparison operators should work, just as in DateTime. In
+        addition, all DateTime::Fiction::JRRTolkien::Shire objects will
+        interpolate into a string representing the date when used in a
+        double-quoted string.
 
-  as_string
-
-    $shire_date_as_string = $shire_date->string;
-
-    Returns the given shire date as a string, similar in theory to "scalar
-    localtime"
-
-  on_date
-
-        $historic_events = $shire_date->on_date
-
-    or you may want to try something like my $shiredate =
-    Date::Tolkien::Shire->new(time); print "Today is " . $shiredate->on_date
-    . "\n";
-
-    This method returns a string containing important events that happened
-    on this day and month in history, as well as the day itself. It does not
-    give much more usefullness as far as using dates go, but it should be
-    fun to run during a startup script or something. At present the events
-    are limited to the crucial years at the end of the third age when the
-    final war of the ring took place and Sauron was permanently defeated.
-    More dates will be added as I find them (if I find them maybe I should
-    say). All the ones below come from Appendix B of the Lord of the Rings.
-    At this point, these are only available in English.
-
-    Note here that the string is formatted. This is to keep things simple
-    when using it as in the second example above. Note that in this second
-    example you are actually ending with a double space, as the first
-    endline is part of the return value.
-
-    If you don't like how this is formatted, complain at me and if I like
-    you I'll consider changing it :-)
+DURATIONS AND DATE MATH
+    Durations and date math (other than comparisons) are not supported at
+    present on this module (patches are always welcome). If this is needed,
+    there are a couple of options. If workig with dates within epoch time,
+    the dates can be converted to epoch time, the math done, and then
+    converted back. Regardless of the dates, the shire objects can also be
+    converted to DateTime objects, the math done with the DateTime class,
+    and then the DateTime object converted back to a Shire object.
 
 NOTE: YEAR CALCULATION
     http://www.glyhweb.com/arda/f/fourthage.html references a letter sent by
     Tolkien in 1958 in which he estimates approxiimately 6000 years have
     passed since the War of the Ring and the end of the Third Age. (Thanks
     to Danny O'Brien from sending me this link). I took this approximate as
-    an exact and calculated back 6000 years from 1958 and set this as the
-    start of the 4th age (1422). Thus the fourth age begins in our B.C 4042.
+    an exact amount and calculated back 6000 years from 1958. This I set as
+    the start of the 4th age (1422 S.R.). Thus the fourth age begins in our
+    B.C 4042.
 
     According to Appendix D of the Lord of the Rings, leap years in hobbit
     calendar are every 4 years unless its the turn of the century, in which
-    case it's not a leap year. Our calendar uses every 4 years unless it's
-    100 years unless its 400 years. So, if no changes have been made to the
-    hobbit's calendar since the end of the third age, their calendar would
-    be about 15 days further behind ours now then when the War of the Ring
-    took place. Implementing this seemed to me to go against Tolkien's
-    general habit of converting dates in the novel to our equivalents to
-    give us a better sense of time. My thoughts, at least right now, is that
-    it is truer to the spirit of things for March 25 today to be about the
-    same as March 25 was back then. So instead, I have modified Tolkien's
-    description of the hobbit calendar so that leap years occur once every 4
-    years unless it's 100 years unless it's 400 years, so as it matches our
-    calendar in that regard. These 100 and 400 year intervals occur at
-    different times in the two calendars, however. Thus the last day of our
-    year is sometimes 7 Afteryule, sometimes 8, and sometimes 9.
+    case it's not a leap year. Our calendar (Gregorian) uses every 4 years
+    unless it's 100 years unless its 400 years. So, if no changes have been
+    made to the hobbit's calendar since the end of the third age, their
+    calendar would be about 15 days further behind ours now then when the
+    War of the Ring took place. Implementing this seemed to me to go against
+    Tolkien's general habit of converting dates in the novel to our
+    equivalents to give us a better sense of time. My thoughts, at least
+    right now, is that it is truer to the spirit of things for years to line
+    up, and for Midyear's day to still be approximately on the summer
+    solstice. So instead, I have modified Tolkien's description of the
+    hobbit calendar so that leap years occur once every 4 years unless it's
+    100 years unless it's 400 years, so as it matches the Gregorian calendar
+    in that regard. These 100 and 400 year intervals occur at different
+    times in the two calendars, so there is not a one to one correspondence
+    of days regardless of years. However, the variations follow a 400 year
+    cycle.
+
+AUTHOR
+    Tom Braun <tbraun@pobox.com>
+
+LICENSE AND COPYRIGHT
+    Copyright (c) 2003 Tom Braun. All rights reserved. This program is free
+    software; you can redistribute it and/or modify it under the same terms
+    as Perl itself.
+
+    The calendar implemented on this module was created by J.R.R. Tolkien,
+    and the copyright is still held by his estate. The license and copyright
+    given herein applies only to this code and not to the calendar itself.
+
+    The full text of the license can be found in the LICENSE file included
+    with this module.
+
+SUPPORT
+    Support on this module may be obtained by emailing me. However, I am not
+    a developer on the other classes in the DateTime project. For support on
+    them, please see the support options in the DateTime documentation.
 
 BIBLIOGRAPHY
     Tolkien, J. R. R. <i>Return of the King<i>. New York: Houghton Mifflin
@@ -204,10 +323,7 @@ BIBLIOGRAPHY
 
     http://www.glyphweb.com/arda/f/fourthage.html
 
-BUGS
-    Epoch time. Since epoch time was used as the base for this module, and
-    the only way to currently set a date is from epoch time, it borks on
-    values that epoch time doesn't support (currently values before 1902 or
-    after 2037). The module should automatically expand in available dates
-    directly with epoch time support on your system.
+SEE ALSO
+    The DateTime project documentation (perldoc DateTime, datetime@perl.org
+    mailing list, or http://datetime.perl.org/).
 
