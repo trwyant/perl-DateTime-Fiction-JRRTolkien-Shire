@@ -554,7 +554,7 @@ sub on_date {
     # the day matches up
     $events{0} = { 3  => "Wedding of King Elessar and Arwen, 1419.\n"
 		   };
-    $events{1} = { 8  => "The Company of the Ring reaches Holland, 1419.\n",
+    $events{1} = { 8  => "The Company of the Ring reaches Hollin, 1419.\n",
 		   13 => "The Company of the Ring reaches the West-gate of Moria at nightfall, 1419.\n",
 		   14 => "The Company of the Ring spends the night in Moria hall 21, 1419.\n",
 		   15 => "The Bridge of Khazad-dum, and the fall of Gandalf, 1419.\n",
@@ -576,7 +576,7 @@ sub on_date {
 		       "Eomer hears of the descent of the Orc-band from Emyn Muil, 1419.\n" .
 		       "Frodo and Samwise enter the eastern Emyn Muil, 1419.\n",
 		   27 => "Aragorn reaches the west-cliff at sunrise, 1419.\n" .
-		       "Eomer sets out Eastfold against Theoden's orders to pursue the Orcs, 1419.\n",
+		       "Eomer sets out from Eastfold against Theoden's orders to pursue the Orcs, 1419.\n",
 		   28 => "Eomer overtakes the Orcs just outside of Fangorn Forest, 1419.\n",
 		   29 => "Meriodoc and Pippin escape and meet Treebeard, 1419.\n" .
 		       "The Rohirrim attack at sunrise and destroy the Orcs, 1419.\n" .
@@ -610,7 +610,7 @@ sub on_date {
 		   11 => "Gollum visits Shelob, 1419.\n" . 
 		       "Denethor sends Faramir to Osgiliath, 1419.\n" .
 		       "Eastern Rohan is invaded and Lorien assaulted, 1419.\n",
-		   12 => "Gollum leads Frodo in Shelob's lair, 1419.\n" .
+		   12 => "Gollum leads Frodo into Shelob's lair, 1419.\n" .
 		       "Ents defeat the invaders of Rohan, 1419.\n",
 		   13 => "Frodo captured by the Orcs of Cirith Ungol, 1419.\n" .
 		       "The Pelennor is overrun and Faramir is wounded, 1419.\n" .
@@ -663,7 +663,7 @@ sub on_date {
 		       "  they drive off the guard of Rangers, 1418.\n" .
 		       "Saruman comes to the Shire, 1419.\n",   
 		   23 => "Four Black Riders enter the shire before dawn.  The others pursue \n" .
-		       "the Rangers eastword and then return to watch the Greenway, 1418.\n" .
+		       "the Rangers eastward and then return to watch the Greenway, 1418.\n" .
 		       "A Black Rider comes to Hobbiton at nightfall, 1418.\n" . 
 		       "Frodo leaves Bag End, 1418.\n" .
 		       "Gandalf having tamed Shadowfax rides from Rohan, 1418.\n",
@@ -677,7 +677,7 @@ sub on_date {
             	   };
     $events{10} = { 3  => "Gandalf attacked at night on Weathertop, 1418.\n",
 		    5  => "Gandalf and the Hobbits leave Rivendell, 1419.\n",
-		    6  => "The camp under weathertop is attacked at night and Frodo is wounded, 1418.\n",
+		    6  => "The camp under Weathertop is attacked at night and Frodo is wounded, 1418.\n",
 		    11 => "Glorfindel drives the Black Riders off the Bridge of Mitheithel, 1418.\n",
 		    13 => "Frodo crosses the Bridge of Mitheithel, 1418.\n",
 		    18 => "Glorfindel finds Frodo at dusk, 1418.\n" . 
