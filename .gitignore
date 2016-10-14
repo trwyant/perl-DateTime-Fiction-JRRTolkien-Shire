@@ -1,0 +1,6 @@
+blib/
+DateTime-Fiction-JRRTolkien-Shire-*
+Makefile
+META.*
+MYMETA.*
+pm_to_blib
