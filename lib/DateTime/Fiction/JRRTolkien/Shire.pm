@@ -791,9 +791,9 @@ being lost.  The same is true of time zones.
 Most of these methods mimic their corresponding DateTime methods in functionality.
 For additional information on these methods, see the DateTime documentation.
 
-=over 4
-
 =head2 Constructors
+
+=over
 
 =item * new( ... )
 
@@ -855,7 +855,11 @@ like in new.
 Creates a new Shire object that is the same date (and underlying time)
 as the calling object.
 
+=back
+
 =head2 Get Methods
+
+=over
 
 =item * year
 
@@ -964,7 +968,11 @@ This can be fun to put in a .bashrc or .cshrc.  Try
     perl -MDateTime::Fiction::JRRTolkien::Shire 
       -le 'print DateTime::Fiction::JRRTolkien::Shire->now->on_date;'
 
+=back
+
 =head2 Set Methods
+
+=over
 
 =item * Set( ... )
 
@@ -993,13 +1001,13 @@ DateTime object.
 Just like in DateTime.  This method has no effect on the shire calendar, but be
 stored with the date if it is ever converted to another calendar with time support.
 
+=back
+
 =head2 Comparisons and Stringification
 
 All comparison operators should work, just as in DateTime.  In addition,
 all DateTime::Fiction::JRRTolkien::Shire objects will interpolate into
 a string representing the date when used in a double-quoted string.  
-
-=back
 
 =head1 DURATIONS AND DATE MATH
 
@@ -1012,7 +1020,7 @@ the DateTime class, and then the DateTime object converted back to a Shire objec
 
 =head1 NOTE: YEAR CALCULATION
 
-http://www.glyhweb.com/arda/f/fourthage.html references a letter sent by
+L<http://www.glyhweb.com/arda/f/fourthage.html> references a letter sent by
 Tolkien in 1958 in which he estimates approxiimately 6000 years have passed
 since the War of the Ring and the end of the Third Age.  (Thanks to Danny
 O'Brien from sending me this link).  I took this approximate as an exact amount
@@ -1063,15 +1071,15 @@ support on them, please see the support options in the DateTime documentation.
 
 =head1 BIBLIOGRAPHY
 
-Tolkien, J. R. R. <i>Return of the King<i>.  New York: Houghton Mifflin Press,
+Tolkien, J. R. R. I<Return of the King>.  New York: Houghton Mifflin Press,
 1955.
 
-http://www.glyphweb.com/arda/f/fourthage.html
+L<http://www.glyphweb.com/arda/f/fourthage.html>
 
 =head1 SEE ALSO
 
 The DateTime project documentation (perldoc DateTime, datetime@perl.org mailing list,
-or http://datetime.perl.org/).
+or L<http://datetime.perl.org/>).
 
 =cut
 
