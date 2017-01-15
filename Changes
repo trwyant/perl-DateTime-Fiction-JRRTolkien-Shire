@@ -1,2 +1,5 @@
-0.01 -- First release.  Based on Date::Tolkien::Shire 1.12.
-0.02 -- Doc fix.
+0.02			2003-12-07	Tom Braun
+    Doc fix.
+
+0.01			2003-12-07	Tom Braun
+    First release.  Based on Date::Tolkien::Shire 1.12.
