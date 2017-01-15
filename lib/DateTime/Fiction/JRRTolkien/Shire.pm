@@ -2,7 +2,7 @@ package DateTime::Fiction::JRRTolkien::Shire;
 
 use vars qw($VERSION);
 use strict;
-use DateTime;
+use DateTime 0.14;
 our $VERSION = 0.02;
 
 # This assumes all the values in the info hashref are valid, and doesn't do validation
@@ -1076,3 +1076,5 @@ or http://datetime.perl.org/).
 =cut
 
 1;
+
+# ex: set textwidth=72 :

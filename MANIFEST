@@ -10,4 +10,5 @@ t/02accessor.t
 t/03set.t
 t/04overload.t
 t/05ondate.t
-META.yml                                
+META.yml
+META.json
