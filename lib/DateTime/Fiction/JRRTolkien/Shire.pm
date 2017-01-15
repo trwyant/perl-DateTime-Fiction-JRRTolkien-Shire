@@ -1,5 +1,7 @@
 package DateTime::Fiction::JRRTolkien::Shire;
 
+use 5.008004;
+
 use vars qw($VERSION);
 use strict;
 use DateTime 0.14;
