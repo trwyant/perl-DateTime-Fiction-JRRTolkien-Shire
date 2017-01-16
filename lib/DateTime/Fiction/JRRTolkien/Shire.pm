@@ -639,7 +639,7 @@ sub on_date {
 		   27 => "Bard II and Thorin III Stonehelm drive the enemy from Dale, 1419.\n",
 		   28 => "Celeborn crosses the Anduin and begins destruction of Dol Guldur, 1419.\n"
 		   };
-    $events{4} = { 6  => "The mallorn trea flowers in the party field, 1420.\n",
+    $events{4} = { 6  => "The mallorn tree flowers in the party field, 1420.\n",
 	           8  => "Ring bearers are honored on the fields of Cormallen, 1419.\n",
 	           12 => "Gandalf arrives in Hobbiton, 1418\n"
 	           };
@@ -656,7 +656,7 @@ sub on_date {
     $events{8} = { 10 => "Funeral of King Theoden, 1419.\n"
 		   };
     $events{9} = { 18 => "Gandalf escapes from Orthanc in the early hours, 1418.\n",
-		   19 => "Gandalf comes to Edoras as a beggar, and is refused admintance, 1418",
+		   19 => "Gandalf comes to Edoras as a beggar, and is refused admittance, 1418",
 		   20 => "Gandalf gains entrance to Edoras.  Theoden commands him to go:\n" .
 		       "\"Take any horse, only be gone ere tomorrow is old\", 1418.\n",
 		   21 => "The hobbits return to Rivendell, 1419.\n",
@@ -693,7 +693,7 @@ sub on_date {
     $events{11} = { 3  => "Battle of Bywater and passing of Saruman, 1419.\n" .
 			"End of the War of the Ring, 1419.\n"
 		  };
-    $events{12} = { 25 => "The Company of the Ring leaves Rivendell at dusk.\n"
+    $events{12} = { 25 => "The Company of the Ring leaves Rivendell at dusk, 1418.\n"
 		    };
 
     if ($self->{holiday} and defined($events{0}->{$self->{holiday}})) {
