@@ -1051,19 +1051,26 @@ of days regardless of years.  However, the variations follow a 400 year cycle.
 
 Tom Braun <tbraun@pobox.com>
 
-=head1 LICENSE AND COPYRIGHT
+Thomas R. Wyant, III F<wyant at cpan dot org>
 
-Copyright (c) 2003 Tom Braun.  All rights reserved.  This program is
-free software; you can redistribute it and/or modify it under the same
-terms as Perl itself.
-                                                                                
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (c) 2003 Tom Braun. All rights reserved.
+
+Copyright (C) 2017 Thomas R. Wyant, III
+
 The calendar implemented on this module was created by J.R.R. Tolkien,
-and the copyright is still held by his estate.  The license and 
-copyright given herein applies only to this code and not to the 
+and the copyright is still held by his estate.  The license and
+copyright given herein applies only to this code and not to the
 calendar itself.
-                                                                   
-The full text of the license can be found in the LICENSE file included
-with this module.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself. For more details, see the full text
+of the licenses in the LICENSE file included with this module.
+
+This program is distributed in the hope that it will be useful, but
+without any warranty; without even the implied warranty of
+merchantability or fitness for a particular purpose.
 
 =head1 SUPPORT
 
