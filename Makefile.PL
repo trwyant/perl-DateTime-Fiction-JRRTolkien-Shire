@@ -53,7 +53,8 @@ $mmv >= 6.4501
 		url	=> 'git://github.com/trwyant/perl-DateTime-Fiction-JRRTolkien-Shire.git',
 		web	=> 'https://github.com/trwyant/perl-DateTime-Fiction-JRRTolkien-Shire',
 	    },
-	}
+	},
+	provides(),
 };
 
 $mmv >= 6.4701
@@ -93,6 +94,17 @@ authortest :: pure_all
 testcover :: pure_all
 	cover -test
 EOD
+}
+
+sub provides {
+    -d 'lib'
+	or return;
+    local $@ = undef;
+    my $provides = eval {
+	require Module::Metadata;
+	Module::Metadata->provides( version => 2, dir => 'lib' );
+    } or return;
+    return ( provides => $provides );
 }
 
 # ex: set textwidth=72 :
