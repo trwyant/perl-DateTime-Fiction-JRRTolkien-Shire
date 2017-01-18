@@ -31,7 +31,10 @@ my $shire6 = DateTime::Fiction::JRRTolkien::Shire->from_day_of_year(year => 7465
 								    day_of_year => 187);
 my $shire7 = DateTime::Fiction::JRRTolkien::Shire->new(year => 7420,
 						       holiday => 4);
-my $shire8 = DateTime::Fiction::JRRTolkien::Shire->from_epoch(epoch => timelocal(0, 0, 0, 17, 11, 2003));
+
+# Not timelocal, because DateTime->from_epoch() produces an object with
+# zone 'UTC', not 'floating'.
+my $shire8 = DateTime::Fiction::JRRTolkien::Shire->from_epoch(epoch => timegm(0, 0, 0, 17, 11, 2003));
 
 is($shire1->holiday, 1);
 is(($shire2->utc_rd_values)[0], ($dt2->utc_rd_values)[0]);
