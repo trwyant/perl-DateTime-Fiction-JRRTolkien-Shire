@@ -5,7 +5,7 @@ use 5.008004;
 use vars qw($VERSION);
 use strict;
 use DateTime 0.14;
-our $VERSION = 0.02;
+our $VERSION = '0.19_01';
 
 # This assumes all the values in the info hashref are valid, and doesn't do validation
 # However, the day and month parameters will be given defaults if not present

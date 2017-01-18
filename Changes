@@ -1,3 +1,24 @@
+0.19_01			2017-01-17	T. R. Wyant
+    Replace LICENSE file with LICENSES/ dir. The new directory contains
+    the licenses as individual files.
+
+    Synch on_date() text with Date::Tolkien::Shire
+
+    Add 'provides' metadata to EUMM output. This happens only if
+    Module::Metadata is installed.
+
+    Update README
+
+    Update author and copyright
+
+    Require Perl 5.8.4 (because DateTime does).
+
+    Correct POD.
+
+    Get metadata up to snuff.
+
+    Make Changes file comply with CPAN::Changes::Spec
+
 0.02			2003-12-07	Tom Braun
     Doc fix.
 
