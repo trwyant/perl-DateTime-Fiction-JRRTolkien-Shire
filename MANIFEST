@@ -1,6 +1,7 @@
 lib/DateTime/Fiction/JRRTolkien/Shire.pm
 Makefile.PL
-LICENSE
+LICENSES/Artistic
+LICENSES/Copying
 MANIFEST
 README
 Changes
