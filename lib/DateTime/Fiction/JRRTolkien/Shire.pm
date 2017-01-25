@@ -2,9 +2,11 @@ package DateTime::Fiction::JRRTolkien::Shire;
 
 use 5.008004;
 
-use vars qw($VERSION);
 use strict;
+use warnings;
+
 use DateTime 0.14;
+
 our $VERSION = '0.20';
 
 # This assumes all the values in the info hashref are valid, and doesn't do validation
