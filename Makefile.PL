@@ -11,10 +11,11 @@ my %args = (
     NAME		=> 'DateTime::Fiction::JRRTolkien::Shire',
     VERSION_FROM	=> 'lib/DateTime/Fiction/JRRTolkien/Shire.pm',
     PREREQ_PM => {
+	'Carp'		=> 0,
 	'DateTime'	=> 0.14,
 	'overload'	=> 0,
 	'strict'	=> 0,
-	'vars'		=> 0,
+	'warnings'	=> 0,
     },
     PL_FILES => {},	# Prevent old MakeMaker from running Build.PL
     'dist' => {

@@ -5,6 +5,7 @@ use 5.008004;
 use strict;
 use warnings;
 
+use Carp ();
 use DateTime 0.14;
 
 our $VERSION = '0.20';
@@ -183,21 +184,22 @@ sub new {
 	}
     }
 
-    die "DateTime::Fiction::JRRTolkien::Shire: Invalid year given to new constructor\n" if not int($args{year});
+    _croak( 'Invalid year given to new constructor' )
+	if not int($args{year});
     $self->{year} = $args{year};
     $self->{leapyear} = 0;
     $self->{leapyear} = 1 if $self->{year} % 4 == 0 and $self->{year} % 100 != 0;
     $self->{leapyear} = 1 if $self->{year} % 400 == 0;
     if ($args{holiday}) {
-	die "DateTime::Fiction::JRRTolkien::Shire: Invalid holiday given to new constructor\n" 
+	_croak( 'Invalid holiday given to new constructor' )
 	    if (int($args{holiday}) < 0) || (int($args{holiday}) > 6);
-	die "DateTime::Fiction::JRRTolkien::Shire: Overlithe is only valid on leap years\n"
+	_croak( 'Overlithe is only valid on leap years' )
 	    if $args{holiday} == 4 and not $self->{leapyear};
 	$self->{holiday} = $args{holiday};
     } elsif ($args{month}) {
-	die "DateTime::Fiction::JRRTolkien::Shire: Invalid month given to new constructor\n" 
+	_croak( 'Invalid month given to new constructor' )
 	  if (int($args{month}) < 1) || (int($args{month}) > 12);
-	die "DateTime::Fiction::JRRTolkien::Shire: Invalid day given to new constructor\n" 
+	_croak( 'Invalid day given to new constructor' )
 	  if $args{day} and (int($args{day}) < 1) || (int($args{day}) > 30);
 	$self->{month} = $args{month};
 	$self->{day} = $args{day} || 1;
@@ -269,11 +271,13 @@ sub from_day_of_year {
     $doy = $args{day_of_year};
     delete $args{day_of_year};
 
-    die "DateTime::Fiction::JRRTolkien::Shire: No year given to from_day_of_year constructor.\n" if not $args{year};
+    _croak( 'No year given to from_day_of_year constructor' )
+	if not $args{year};
     $leap = 1 if $args{year} % 4 == 0 and $args{year} % 100 != 0;
     $leap = 1 if $args{year} % 400 == 0;
     if ($leap) {
-	die "DateTime::Fiction::JRRTolkien::Shire: Invalid day given to from_day_of_year constructor.\n" if $doy > 366 or $doy < 1;
+	_croak( 'Invalid day given to from_day_of_year constructor' )
+	    if $doy > 366 or $doy < 1;
 	if ($doy == 1) {
 	    $args{holiday} = 1;
 	} elsif ($doy == 182) {
@@ -293,7 +297,8 @@ sub from_day_of_year {
 	    $args{day} = (($doy - 1) % 30) + 1;
 	}
     } else {
-	die "DateTime::Fiction::JRRTolkien::Shire: Invalid day given to from_day_of_year constructor.\n" if $doy > 365 or $doy < 1;
+	_croak( 'Invalid day given to from_day_of_year constructor' )
+	    if $doy > 365 or $doy < 1;
 	if ($doy == 1) {
 	    $args{holiday} = 1;
 	} elsif ($doy == 182) {
@@ -473,14 +478,14 @@ sub set {
     }
 
     if ($self->{holiday}) {
-	die "DateTime::Fiction::JRRTolkien::Shire: Invalid holiday given to set method\n" 
+	_croak( 'Invalid holiday given to set method' )
 	    if (int($self->{holiday}) < 0) || (int($self->{holiday}) > 6);
-	die "DateTime::Fiction::JRRTolkien::Shire: Overlithe is only valid on a leap year\n"
+	_croak( 'Overlithe is only valid on a leap year' )
 	    if $self->{holiday} == 4 and not $self->{leapyear};
     } else {
-	die "DateTime::Fiction::JRRTolkien::Shire: Invalid month given to set method\n" 
+	_croak( 'Invalid month given to set method' )
 	    if (int($self->{month}) < 1) || (int($self->{month}) > 12);
-        die "DateTime::Fiction::JRRTolkien::Shire: Invalid day given to set method\n" 
+        _croak( 'Invalid day given to set method' )
 	    if (int($self->{day}) < 1) || (int($self->{day}) > 30);
     }
     
@@ -708,6 +713,12 @@ sub on_date {
 
     return $returntext;
 } #end sub on_date
+
+
+sub _croak {
+    my @msg = @_;
+    Carp::croak( __PACKAGE__ . ": @msg" );
+}
 
 __END__
 
