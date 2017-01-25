@@ -1,7 +1,4 @@
-0.19_02			2017-01-18	T. R. Wyant
-    Fix test faliure in t/01_constructor.t.
-
-0.19_01			2017-01-17	T. R. Wyant
+0.20		2017-01-25	T. R. Wyant
     Replace LICENSE file with LICENSES/ dir. The new directory contains
     the licenses as individual files.
 
