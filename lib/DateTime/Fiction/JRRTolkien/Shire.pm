@@ -320,6 +320,10 @@ sub from_day_of_year {
     return $class->new(%args);
 } # end sub from_day_of_year
 
+sub calendar_name {
+    return 'Shire';
+}
+
 sub clone { bless { %{ $_[0] } }, ref $_[0] } # Stolen from DateTime.pm
 
 # Get methods
@@ -875,6 +879,10 @@ as the calling object.
 =head2 Get Methods
 
 =over
+
+=item * calendar_name
+
+Returns C<'Shire'>.
 
 =item * year
 

@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 use strict;
-use Test::More tests => 20;
+use Test::More tests => 21;
 use DateTime;
 use DateTime::Fiction::JRRTolkien::Shire;
 
@@ -48,3 +48,5 @@ my $shire2 = DateTime::Fiction::JRRTolkien::Shire->from_epoch(epoch => $time);
 is($shire2->epoch, $time);
 is(int($shire2->hires_epoch), $time);
 # utc_rd_values and utc_rd_as_seconds were tested in the constructor tests
+
+is( $shire->calendar_name(), 'Shire', q<Calendar name is 'Shire'> );
