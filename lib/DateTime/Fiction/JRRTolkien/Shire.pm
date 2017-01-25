@@ -728,7 +728,7 @@ __END__
 
 =head1 NAME
 
-DateTime::Fiction::JRRTolkien::Shire.pm
+DateTime::Fiction::JRRTolkien::Shire - Implementation of the calendar used by the Hobbits.
 
 =head1 SYNOPSIS
 
