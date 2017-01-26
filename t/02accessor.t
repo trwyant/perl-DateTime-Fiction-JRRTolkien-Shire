@@ -1,6 +1,6 @@
-#!/usr/bin/perl -w
-
 use strict;
+use warnings;
+
 use Test::More tests => 21;
 use DateTime;
 use DateTime::Fiction::JRRTolkien::Shire;
