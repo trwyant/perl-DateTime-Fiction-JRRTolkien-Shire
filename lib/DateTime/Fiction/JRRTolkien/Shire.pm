@@ -534,13 +534,13 @@ sub set_time_zone {
 }
 
 # Comparison overloads come with DateTime.  Stringify will be our own
-use overload('<=>', \&compare);
-use overload('cmp', \&compare);
-use overload('""'  => \&stringify);
+use overload('<=>', \&_compare);
+use overload('cmp', \&_compare);
+use overload('""'  => \&_stringify);
 
-sub compare { return $_[0]->{dt} <=> $_[1]->{dt}; }
+sub _compare { return $_[0]->{dt} <=> $_[1]->{dt}; }
 
-sub stringify {
+sub _stringify {
     my $self = shift;
     my $returntext;
     $self->_recalc_Shire if $self->{recalc};
@@ -556,7 +556,7 @@ sub stringify {
     }
 
     return $returntext;
-} # stringify
+}
 
 sub on_date {
     my $self = shift;
@@ -749,12 +749,16 @@ DateTime::Fiction::JRRTolkien::Shire - Implementation of the calendar used by th
     my $shire = DateTime::Fiction::JRRTolkien::Shire->new(year => 1419,
                                                           holiday => '2 Lithe');
 
-    my $shire = DateTime::Fiction::JRRTolkien::Shire->from_epoch(epoch = $time);
-    my $shire = DateTime::Fiction::JRRTolkien::Shire->today; # same as from_epoch(epoch = time());
+    my $shire = DateTime::Fiction::JRRTolkien::Shire->from_epoch(
+	epoch = $time);
+    my $shire = DateTime::Fiction::JRRTolkien::Shire->today;
+	# same as from_epoch(epoch = time());
 
-    my $shire = DateTime::Fiction::JRRTolkien::Shire->from_object(object => $some_other_DateTime_object);
-    my $shire = DateTime::Fiction::JRRTolkien::Shire->from_day_of_year(year => 1420,
-                                                                       day_of_year => 182);
+    my $shire = DateTime::Fiction::JRRTolkien::Shire->from_object(
+        object => $some_other_DateTime_object);
+    my $shire = DateTime::Fiction::JRRTolkien::Shire->from_day_of_year(
+        year => 1420,
+        day_of_year => 182);
     my $shire2 = $shire->clone;
 
     # Accessors
@@ -858,21 +862,22 @@ Same as in DateTime.
 
 =item * from_object( object => $object, ... )
 
-Same as in DateTime.  Takes any other DateTime calendar object and converts it to
-a DateTime::Fiction::JRRTolkien::Shire object.
+Same as in DateTime.  Takes any other DateTime calendar object and
+converts it to a DateTime::Fiction::JRRTolkien::Shire object.
 
 =item * last_day_of_month( ... )
 
-Same as in DateTime.  Like the new constructor, but it does not take a day parameter.  
-Instead, the day is set to 30, which is the last day of any month in the shire 
-calendar.  A holiday parameter should not be used with this method.  Use new instead.
+Same as in DateTime.  Like the new constructor, but it does not take a
+day parameter.  Instead, the day is set to 30, which is the last day of
+any month in the shire calendar.  A holiday parameter should not be used
+with this method.  Use new instead.
 
 =item * from_day_of_year( year => $year, day_of_year => $yday)
 
-Same as in DateTime.  Gets the date from the given year and day of year, both
-of which must be given.  Hour, minute, second, time_zone, etc. parameters
-may also be given, and will be passed to the underlying DateTime object, just
-like in new.
+Same as in DateTime.  Gets the date from the given year and day of year,
+both of which must be given.  Hour, minute, second, time_zone, etc.
+parameters may also be given, and will be passed to the underlying
+DateTime object, just like in new.
 
 =item * clone
 
@@ -1004,7 +1009,7 @@ Try
 
 =over
 
-=item * Set( ... )
+=item * set( ... )
 
 Allows the day, month, and year to be changed.  It takes any parameters
 allowed by new constructor, including all those supported by DateTime

@@ -86,8 +86,7 @@ sub MY::postamble {
 
     return <<"EOD";
 
-# AUTHORTEST_FILES = t/*.t xt/author/*.t
-AUTHORTEST_FILES = t/*.t
+AUTHORTEST_FILES = t/*.t xt/author/*.t
 
 authortest :: pure_all
 	AUTHOR_TESTING=1 $authortest
