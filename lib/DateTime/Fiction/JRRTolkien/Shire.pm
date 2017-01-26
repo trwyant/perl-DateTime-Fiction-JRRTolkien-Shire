@@ -14,7 +14,7 @@ our $VERSION = '0.20';
 # However, the day and month parameters will be given defaults if not present
 sub _recalc_DateTime {
     my ($self, %dt_args) = @_;
-    my ($prevleap, $gregleap, $modyear, $yday, $arg);
+    my ($prevleap, $gregleap, $modyear, $yday);
     my @monthlen = (0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31);
 
     $dt_args{year} = $self->{year} - 5464;
@@ -86,13 +86,15 @@ sub _recalc_DateTime {
 
     # Now for time parameters, if any
     if ($self->{dt}) {
-	foreach $arg (qw(hour minute second nanosecond time_zone locale)) {
+	foreach my $arg (qw(hour minute second nanosecond time_zone locale)) {
 	    $dt_args{$arg} = $self->{dt}->$arg if not defined $dt_args{$arg};
 	}
     }
 
-    $self->{dt} = new DateTime(%dt_args);
-} # end sub _recalc_DateTime
+    $self->{dt} = DateTime->new( %dt_args );
+
+    return;
+}
 
 sub _recalc_Shire {
     my $self = shift;
@@ -121,7 +123,7 @@ sub _recalc_Shire {
 	++$self->{year};
 	$yday -= 366;
 	$self->{leapyear} = 0;
-    } elsif (! $self->{leapyear} and $yday > 365) { 
+    } elsif (! $self->{leapyear} && $yday > 365) { 
 	++$self->{year};
 	$yday -= 365;
 	$self->{leapyear} = 0;
@@ -162,24 +164,26 @@ sub _recalc_Shire {
     }
 
     $self->{recalc} = 0;
-} #end sub _date_info
+
+    return;
+}
 
 # Constructors
 
 sub new {
     my ($class, %args) = @_;
-    my ($self, $arg, %dt_args, $itr);
+    my ($self, %dt_args );
     my @months = ('', 'Afteryule', 'Solmath', 'Rethe', 'Astron', 'Thrimidge', 'Forelithe', 'Afterlithe', 
 		  'Wedmath', 'Halimath', 'Winterfilth', 'Blotmath', 'Foreyule');
     my @holidays = ('', '2 Yule', '1 Lithe', "Midyear's day", 'Overlithe', '2 Lithe', '1 Yule');
 
     if ($args{month}) {
-	foreach $itr (1..12) {
+	foreach my $itr (1..12) {
 	    $args{month} = $itr if $args{month} eq $months[$itr];
 	}
     }
     if ($args{holiday}) {
-	foreach $itr (1..6) {
+	foreach my $itr (1..6) {
 	    $args{holiday} = $itr if $args{holiday} eq $holidays[$itr];
 	}
     }
@@ -200,14 +204,14 @@ sub new {
 	_croak( 'Invalid month given to new constructor' )
 	  if (int($args{month}) < 1) || (int($args{month}) > 12);
 	_croak( 'Invalid day given to new constructor' )
-	  if $args{day} and (int($args{day}) < 1) || (int($args{day}) > 30);
+	  if defined( $args{day} ) && ( $args{day} < 1 || $args{day} > 30 );
 	$self->{month} = $args{month};
 	$self->{day} = $args{day} || 1;
     } else {
 	$self->{holiday} = 1;
     }
 
-    foreach $arg (qw(hour minute second nanosecond time_zone locale)) { # for DateTime compatibility
+    foreach my $arg (qw(hour minute second nanosecond time_zone locale)) { # for DateTime compatibility
 	$dt_args{$arg} = $args{$arg} if defined $args{$arg};
     }
     $self->{recalc} = 1; # for weekday
@@ -266,9 +270,9 @@ sub last_day_of_month {
 
 sub from_day_of_year {
     my ($class, %args) = @_;
-    my ($doy, $self, $leap);
+    my $leap;
 
-    $doy = $args{day_of_year};
+    my $doy = $args{day_of_year};
     delete $args{day_of_year};
 
     _croak( 'No year given to from_day_of_year constructor' )
@@ -324,7 +328,7 @@ sub calendar_name {
     return 'Shire';
 }
 
-sub clone { bless { %{ $_[0] } }, ref $_[0] } # Stolen from DateTime.pm
+sub clone { return bless { %{ $_[0] } }, ref $_[0] } # Stolen from DateTime.pm
 
 # Get methods
 sub year { 
@@ -441,19 +445,19 @@ sub utc_rd_as_seconds { return $_[0]->{dt}->utc_rd_as_seconds; }
 
 sub set {
     my ($self, %args) = @_;
-    my (%dt_args, $arg, $itr);
+    my %dt_args;
     my @months = ('', 'Afteryule', 'Solmath', 'Rethe', 'Astron', 'Thrimidge', 'Forelithe', 'Afterlithe', 
 		  'Wedmath', 'Halimath', 'Winterfilth', 'Blotmath', 'Foreyule');
     my @holidays = ('', '2 Yule', '1 Lithe', "Midyear's day", 'Overlithe', '2 Lithe', '1 Yule');
     $self->_recalc_Shire if $self->{recalc};
 
     if ($args{month}) {
-	foreach $itr (1..12) {
+	foreach my $itr (1..12) {
 	    $args{month} = $itr if $args{month} eq $months[$itr];
 	}
     }
     if ($args{holiday}) {
-	foreach $itr (1..6) {
+	foreach my $itr (1..6) {
 	    $args{holiday} = $itr if $args{holiday} eq $holidays[$itr];
 	}
     }
@@ -493,7 +497,7 @@ sub set {
 	    if (int($self->{day}) < 1) || (int($self->{day}) > 30);
     }
     
-    foreach $arg (qw(hour minute second nanosecond locale)) {
+    foreach my $arg (qw(hour minute second nanosecond locale)) {
 	$dt_args{$arg} = $args{$arg} if defined $args{$arg};
     }
    
@@ -501,11 +505,10 @@ sub set {
     $self->{recalc} = 1; # for the weekday
 
     return $self;
-} # end sub set
+}
 
-sub truncate {
+sub truncate : method {		## no critic (ProhibitBuiltInHomonyms)
     my ($self, %args) = @_;
-    my ($info, %greg);
     $self->_recalc_Shire if $self->{recalc};
 
     if ($args{to} eq 'year') {
@@ -521,13 +524,14 @@ sub truncate {
     }
 
     return $self;
-} # end sub truncate
+}
 
 sub set_time_zone { 
     my ($self, $tz) = @_;
     $self->{dt}->set_time_zone($tz);
     $self->{recalc} = 1; # in case the day flips when the timezone changes
-} # end sub set_time_zone
+    return $self;
+}
 
 # Comparison overloads come with DateTime.  Stringify will be our own
 use overload('<=>', \&compare);
@@ -718,11 +722,12 @@ sub on_date {
     return $returntext;
 } #end sub on_date
 
-
 sub _croak {
     my @msg = @_;
     Carp::croak( __PACKAGE__ . ": @msg" );
 }
+
+1;
 
 __END__
 
