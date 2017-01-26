@@ -946,7 +946,7 @@ the same rule as the Gregorian calendar.  Every four years is a leap year,
 except the first year of the century, which is not a leap year.  However,
 every fourth century (400 years), the first year of the century is a leap 
 year (every 4, except every 100, except every 400).  This is a slight
-change from the calendar descibed in Appendix D, which uses the rule of 
+change from the calendar described in Appendix D, which uses the rule of 
 once every 4 years, except every 100 years (the same as in the Julian 
 calendar).  Given some uncertainty about how many years have passed
 since the time in Lord of the Rings (see note below), and the expectations
@@ -956,12 +956,13 @@ this calendar implementation is not strictly that described in Appendix D.
 
 =item * week
 
-A two element array, where the first is the week_year and the latter is the week_number.
+A two element array, where the first is the week_year and the latter is
+the week_number.
 
 =item * week_year
 
-This is always the same as the year in the shire calendar, but is present for
-compatability with other DateTime objects.
+This is always the same as the year in the shire calendar, but is
+present for compatibility with other DateTime objects.
 
 =item * week_number
 
@@ -989,9 +990,10 @@ Returns the UTC rata die days entirely as seconds.
 
 =item * on_date
 
-Prints out the current day.  If the day has some events that transpired on it
-(as defined in Appendix B of the Lord of the Rings), those events are also printed.
-This can be fun to put in a .bashrc or .cshrc.  Try
+Prints out the current day.  If the day has some events that transpired
+on it (as defined in Appendix B of the Lord of the Rings), those events
+are also printed.  This can be fun to put in a F<.bashrc> or F<.cshrc>.
+Try
 
     perl -MDateTime::Fiction::JRRTolkien::Shire 
       -le 'print DateTime::Fiction::JRRTolkien::Shire->now->on_date;'
@@ -1004,30 +1006,32 @@ This can be fun to put in a .bashrc or .cshrc.  Try
 
 =item * Set( ... )
 
-Allows the day, month, and year to be changed.  It takes any parameters allowed
-by new constructor, including all those supported by DateTime and the holiday parameter,
-except for time_zone.  This is used in much the same way as new, with the 
-exception that any parameters not given will be left as is.
+Allows the day, month, and year to be changed.  It takes any parameters
+allowed by new constructor, including all those supported by DateTime
+and the holiday parameter, except for time_zone.  This is used in much
+the same way as new, with the exception that any parameters not given
+will be left as is.
 
-All parameters are optional, with the current values inserted if the values are not
-supplied.  However, with holidays not falling in any month, it is recommended
-that a day and month always be given together.  Otherwise, unanticipated
-results may occur.
+All parameters are optional, with the current values inserted if the
+values are not supplied.  However, with holidays not falling in any
+month, it is recommended that a day and month always be given together.
+Otherwise, unanticipated results may occur.
 
-As in the new constructor, time parameters have no effect on the shire dates 
-returned.  However, they are maintained in case the object is converted to another
-calendar which supports time.
+As in the new constructor, time parameters have no effect on the shire
+dates returned.  However, they are maintained in case the object is
+converted to another calendar which supports time.
 
 =item * Truncate( ... )
 
 Same as in DateTime.  If the date is a holiday, a truncation to either
-'month' or 'day' is equivalent.  Otherwise, this functions as specified in the
-DateTime object.
+'month' or 'day' is equivalent.  Otherwise, this functions as specified
+in the DateTime object.
 
 =item * set_time_zone( $tz )
 
-Just like in DateTime.  This method has no effect on the shire calendar, but be
-stored with the date if it is ever converted to another calendar with time support.
+Just like in DateTime.  This method has no effect on the shire calendar,
+but be stored with the date if it is ever converted to another calendar
+with time support.
 
 =back
 
@@ -1039,39 +1043,42 @@ a string representing the date when used in a double-quoted string.
 
 =head1 DURATIONS AND DATE MATH
 
-Durations and date math (other than comparisons) are not supported at present
-on this module (patches are always welcome).  If this is needed, there are a couple
-of options.  If workig with dates within epoch time, the dates can be converted
-to epoch time, the math done, and then converted back.  Regardless of the dates,
-the shire objects can also be converted to DateTime objects, the math done with
-the DateTime class, and then the DateTime object converted back to a Shire object.
+Durations and date math (other than comparisons) are not supported at
+present on this module (patches are always welcome).  If this is needed,
+there are a couple of options.  If working with dates within epoch time,
+the dates can be converted to epoch time, the math done, and then
+converted back.  Regardless of the dates, the shire objects can also be
+converted to DateTime objects, the math done with the DateTime class,
+and then the DateTime object converted back to a Shire object.
 
 =head1 NOTE: YEAR CALCULATION
 
-L<http://www.glyhweb.com/arda/f/fourthage.html> references a letter sent by
-Tolkien in 1958 in which he estimates approxiimately 6000 years have passed
-since the War of the Ring and the end of the Third Age.  (Thanks to Danny
-O'Brien from sending me this link).  I took this approximate as an exact amount
-and calculated back 6000 years from 1958.  This I set as the start of the 
-4th age (1422 S.R.).  Thus the fourth age begins in our B.C 4042.
+L<http://www.glyhweb.com/arda/f/fourthage.html> references a letter sent
+by Tolkien in 1958 in which he estimates approximately 6000 years have
+passed since the War of the Ring and the end of the Third Age.  (Thanks
+to Danny O'Brien from sending me this link).  I took this approximate as
+an exact amount and calculated back 6000 years from 1958.  This I set as
+the start of the 4th age (1422 S.R.).  Thus the fourth age begins in our
+B.C 4042.
 
 According to Appendix D of the Lord of the Rings, leap years in hobbit
 calendar are every 4 years unless its the turn of the century, in which
-case it's not a leap year.  Our calendar (Gregorian) uses every 4 years unless it's 
-100 years unless its 400 years.  So, if no changes have been made to 
-the hobbit's calendar since the end of the third age, their calendar would
-be about 15 days further behind ours now then when the War of the Ring took
-place.  Implementing this seemed to me to go against Tolkien's general habit
-of converting dates in the novel to our equivalents to give us a better
-sense of time.  My thoughts, at least right now, is that it is truer to the
-spirit of things for years to line up, and for Midyear's day to still be 
-approximately on the summer solstice.  So instead, I have modified Tolkien's 
-description of the hobbit 
-calendar so that leap years occur once every 4 years unless it's 100
-years unless it's 400 years, so as it matches the Gregorian calendar in that
-regard.  These 100 and 400 year intervals occur at different times in
-the two calendars, so there is not a one to one correspondence
-of days regardless of years.  However, the variations follow a 400 year cycle.
+case it's not a leap year.  Our calendar (Gregorian) uses every 4 years
+unless it's 100 years unless its 400 years.  So, if no changes have been
+made to the hobbit's calendar since the end of the third age, their
+calendar would be about 15 days further behind ours now then when the
+War of the Ring took place.  Implementing this seemed to me to go
+against Tolkien's general habit of converting dates in the novel to our
+equivalents to give us a better sense of time.  My thoughts, at least
+right now, is that it is truer to the spirit of things for years to line
+up, and for Midyear's day to still be approximately on the summer
+solstice.  So instead, I have modified Tolkien's description of the
+hobbit calendar so that leap years occur once every 4 years unless it's
+100 years unless it's 400 years, so as it matches the Gregorian calendar
+in that regard.  These 100 and 400 year intervals occur at different
+times in the two calendars, so there is not a one to one correspondence
+of days regardless of years.  However, the variations follow a 400 year
+cycle.
 
 =head1 AUTHOR
 
@@ -1100,9 +1107,10 @@ merchantability or fitness for a particular purpose.
 
 =head1 SUPPORT
 
-Support on this module may be obtained by emailing me.  However,
-I am not a developer on the other classes in the DateTime project.  For
-support on them, please see the support options in the DateTime documentation.
+Support on this module may be obtained by emailing me.  However, I am
+not a developer on the other classes in the DateTime project.  For
+support on them, please see the support options in the DateTime
+documentation.
 
 =head1 BIBLIOGRAPHY
 
