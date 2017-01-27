@@ -745,6 +745,16 @@ sub _stringify {
     }
 }
 
+foreach my $method ( qw{
+    time_zone time_zone_long_name time_zone_short_name
+} ) {
+    no strict qw{ refs };
+    *$method = sub {
+	my ( $self, @arg ) = @_;
+	return $self->{dt}->$method( @arg )
+    };
+}
+
 sub _croak {
     my @msg = @_;
     Carp::croak( __PACKAGE__ . ": @msg" );

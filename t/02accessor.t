@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 21;
+use Test::More tests => 24;
 use DateTime;
 use DateTime::Fiction::JRRTolkien::Shire;
 
@@ -50,3 +50,12 @@ is(int($shire2->hires_epoch), $time);
 # utc_rd_values and utc_rd_as_seconds were tested in the constructor tests
 
 is( $shire->calendar_name(), 'Shire', q<Calendar name is 'Shire'> );
+
+# Aliased to DateTime
+is( $shire->time_zone()->name(), 'floating', q<Time zone is 'floating'> );
+is( $shire->time_zone_long_name(),
+    'floating', q<Time zone long name is 'floating'> );
+is( $shire->time_zone_short_name(),
+    'floating', q<Time zone short name is 'floating'> );
+
+# ex: set textwidth=72 :
