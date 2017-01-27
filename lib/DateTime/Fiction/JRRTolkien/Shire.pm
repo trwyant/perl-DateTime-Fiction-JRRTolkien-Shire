@@ -16,8 +16,9 @@ my @month_names = ( undef, 'Afteryule', 'Solmath', 'Rethe', 'Astron',
     'Thrimidge', 'Forelithe', 'Afterlithe', 'Wedmath', 'Halimath',
     'Winterfilth', 'Blotmath', 'Foreyule' );
 
-# This assumes all the values in the info hashref are valid, and doesn't do validation
-# However, the day and month parameters will be given defaults if not present
+# This assumes all the values in the info hashref are valid, and doesn't
+# do validation However, the day and month parameters will be given
+# defaults if not present
 sub _recalc_DateTime {
     my ($self, %dt_args) = @_;
     my ($prevleap, $gregleap, $modyear, $yday);
@@ -195,13 +196,13 @@ sub new {
 	if not int($args{year});
     $self->{year} = $args{year};
     $self->{leapyear} = 0;
-    $self->{leapyear} = 1 if $self->{year} % 4 == 0 and $self->{year} % 100 != 0;
+    $self->{leapyear} = 1 if $self->{year} % 4 == 0 && $self->{year} % 100 != 0;
     $self->{leapyear} = 1 if $self->{year} % 400 == 0;
     if ($args{holiday}) {
 	_croak( 'Invalid holiday given to new constructor' )
 	    if (int($args{holiday}) < 0) || (int($args{holiday}) > 6);
 	_croak( 'Overlithe is only valid on leap years' )
-	    if $args{holiday} == 4 and not $self->{leapyear};
+	    if $args{holiday} == 4 && ! $self->{leapyear};
 	$self->{holiday} = $args{holiday};
     } elsif ($args{month}) {
 	_croak( 'Invalid month given to new constructor' )
@@ -820,26 +821,29 @@ DateTime::Fiction::JRRTolkien::Shire - Implementation of the calendar used by th
 
 =head1 DESCRIPTION
  
-Implementation of the calendar used by the hobbits in J.R.R. Tolkien's exceptional
-novel The Lord of The Rings, as described in Appendix D of that book 
-(except where noted).  The calendar has 12 months, each with 30 days, and 5
-holidays that are not part of any month.  A sixth holiday, Overlithe, is added on 
-leap years.  The holiday Midyear's Day (and the Overlithe on a leap year) is
-not part of any week, which means that the year always starts on Sterday.
+Implementation of the calendar used by the hobbits in J.R.R. Tolkien's
+exceptional novel The Lord of The Rings, as described in Appendix D of
+that book (except where noted).  The calendar has 12 months, each with
+30 days, and 5 holidays that are not part of any month.  A sixth
+holiday, Overlithe, is added on leap years.  The holiday Midyear's Day
+(and the Overlithe on a leap year) is not part of any week, which means
+that the year always starts on Sterday.
 
-This module is a follow on to the Date::Tolkien::Shire module, and is rewritten
-to support Dave Rolsky and company's DateTime module.  The DateTime module must
-be installed for this module to work.  Unlike the DateTime module, which includes
-time support, this calendar does not have any mechanisms for giving a shire 
-time (mostly because I've never quite figured out what it should look like).
-Time is maintained, however, so that objects can be converted from other
-calendars to the shire calendar and then converted back without their time components
+This module is a follow on to the Date::Tolkien::Shire module, and is
+rewritten to support Dave Rolsky and company's DateTime module.  The
+DateTime module must be installed for this module to work.  Unlike the
+DateTime module, which includes time support, this calendar does not
+have any mechanisms for giving a shire time (mostly because I've never
+quite figured out what it should look like).  Time is maintained,
+however, so that objects can be converted from other calendars to the
+shire calendar and then converted back without their time components
 being lost.  The same is true of time zones.
 
 =head1 METHODS
 
-Most of these methods mimic their corresponding DateTime methods in functionality.
-For additional information on these methods, see the DateTime documentation.
+Most of these methods mimic their corresponding DateTime methods in
+functionality.  For additional information on these methods, see the
+DateTime documentation.
 
 =head2 Constructors
 
@@ -847,14 +851,17 @@ For additional information on these methods, see the DateTime documentation.
 
 =item * new( ... )
 
-This method takes a year, month, and day parameter, or a year and holiday parameter.
-The year can be any value.  The month can be specified with a string giving the name
-of the month (the same string that would be returned by month_name, with the first letter 
-capitalized and the rest in lower case) or by giving the numerical value for the month,
-between 1 and 12.  The day should always be between 1 and 30.  If a holiday is given 
-instead of a day and month, it should be the name of the holiday as returned by 
-holiday_name (with the first letter of each word capitalized) or a value between 1 
-and 6.  The 1 through 6 numbers map to holidays as follows:
+This method takes a year, month, and day parameter, or a year and
+holiday parameter.  The year can be any value.  The month can be
+specified with a string giving the name of the month (the same string
+that would be returned by month_name, with the first letter capitalized
+and the rest in lower case) or by giving the numerical value for the
+month, between 1 and 12.  The day should always be between 1 and 30.  If
+a holiday is given instead of a day and month, it should be the name of
+the holiday as returned by holiday_name (with the first letter of each
+word capitalized) or a value between 1 and 6.  The 1 through 6 numbers
+map to holidays as follows:
+
     1 => 2 Yule
     2 => 1 Lithe
     3 => Midyear's Day
@@ -862,12 +869,13 @@ and 6.  The 1 through 6 numbers map to holidays as follows:
     5 => 2 Lithe
     6 => 1 Yule
 
-The new method will also take parameters for hour, minute, second, nanosecond, time_zone
-and locale.  If given, these parameters will be stored in case the object is converted to
-another class that supports times.
+The new method will also take parameters for hour, minute, second,
+nanosecond, time_zone and locale.  If given, these parameters will be
+stored in case the object is converted to another class that supports
+times.
 
-If a day is not given, it will default to 1.  If neither a day or month is given,
-the date will default to 2 Yule, the first day of the year.
+If a day is not given, it will default to 1.  If neither a day or month
+is given, the date will default to 2 Yule, the first day of the year.
 
 =item * from_epoch( epoch => $epoch, ... )
 
@@ -876,6 +884,7 @@ Same as in DateTime.
 =item * now( ... )
 
 Same as in DateTime.  Note that this is equivalent to 
+
     from_epoch( epoch => time() );
 
 =item * today( ... )
@@ -956,30 +965,30 @@ Returns the day of the year, from 1 to 366
 
 =item * holiday
 
-Returns the holiday number (given in the description of the new constructor).
-If the day is not a holiday, 0 is returned.
+Returns the holiday number (given in the description of the new
+constructor).  If the day is not a holiday, 0 is returned.
 
 =item * holiday_name
 
-Returns the name of the holiday.  If the day is not a holiday, an empty string
-is returned.
+Returns the name of the holiday.  If the day is not a holiday, an empty
+string is returned.
 
 =item * is_leap_year
 
 Returns 1 if the year is a leap year, and 0 otherwise.  
 
-Leap years are given
-the same rule as the Gregorian calendar.  Every four years is a leap year,
-except the first year of the century, which is not a leap year.  However,
-every fourth century (400 years), the first year of the century is a leap 
-year (every 4, except every 100, except every 400).  This is a slight
-change from the calendar described in Appendix D, which uses the rule of 
-once every 4 years, except every 100 years (the same as in the Julian 
-calendar).  Given some uncertainty about how many years have passed
-since the time in Lord of the Rings (see note below), and the expectations
-of most people that the years match up with what they're used to, I have
-changed this rule for this implementation.  However, this does mean that 
-this calendar implementation is not strictly that described in Appendix D.
+Leap years are given the same rule as the Gregorian calendar.  Every
+four years is a leap year, except the first year of the century, which
+is not a leap year.  However, every fourth century (400 years), the
+first year of the century is a leap year (every 4, except every 100,
+except every 400).  This is a slight change from the calendar described
+in Appendix D, which uses the rule of once every 4 years, except every
+100 years (the same as in the Julian calendar).  Given some uncertainty
+about how many years have passed since the time in Lord of the Rings
+(see note below), and the expectations of most people that the years
+match up with what they're used to, I have changed this rule for this
+implementation.  However, this does mean that this calendar
+implementation is not strictly that described in Appendix D.
 
 =item * week
 
@@ -1001,15 +1010,15 @@ Returns the epoch of the given object, just like in DateTime.
 
 =item * hires_epoch
 
-Returns the epoch as a floating point number, with the fractional portion
-for fractional seconds.  Functions the same as in DateTime.
+Returns the epoch as a floating point number, with the fractional
+portion for fractional seconds.  Functions the same as in DateTime.
 
 =item * utc_rd_values
 
-Returns the UTC rata die days, seconds, and nanoseconds. Ignores fractional
-seconds.  This is the standard method used by other methods to convert 
-the shire calendar to other calendars.  See the DateTime documentation for
-more information.
+Returns the UTC rata die days, seconds, and nanoseconds. Ignores
+fractional seconds.  This is the standard method used by other methods
+to convert the shire calendar to other calendars.  See the DateTime
+documentation for more information.
 
 =item * utc_rd_as_seconds
 
@@ -1141,15 +1150,15 @@ documentation.
 
 =head1 BIBLIOGRAPHY
 
-Tolkien, J. R. R. I<Return of the King>.  New York: Houghton Mifflin Press,
-1955.
+Tolkien, J. R. R. I<Return of the King>.  New York: Houghton Mifflin
+Press, 1955.
 
 L<http://www.glyphweb.com/arda/f/fourthage.html>
 
 =head1 SEE ALSO
 
-The DateTime project documentation (perldoc DateTime, datetime@perl.org mailing list,
-or L<http://datetime.perl.org/>).
+The DateTime project documentation (perldoc DateTime, datetime@perl.org
+mailing list, or L<http://datetime.perl.org/>).
 
 =cut
 
