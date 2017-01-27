@@ -10,6 +10,12 @@ use DateTime 0.14;
 
 our $VERSION = '0.20';
 
+my @holiday_names = ( undef, '2 Yule', '1 Lithe', "Midyear's day",
+    'Overlithe', '2 Lithe', '1 Yule' );
+my @month_names = ( undef, 'Afteryule', 'Solmath', 'Rethe', 'Astron',
+    'Thrimidge', 'Forelithe', 'Afterlithe', 'Wedmath', 'Halimath',
+    'Winterfilth', 'Blotmath', 'Foreyule' );
+
 # This assumes all the values in the info hashref are valid, and doesn't do validation
 # However, the day and month parameters will be given defaults if not present
 sub _recalc_DateTime {
@@ -173,18 +179,15 @@ sub _recalc_Shire {
 sub new {
     my ($class, %args) = @_;
     my ($self, %dt_args );
-    my @months = ('', 'Afteryule', 'Solmath', 'Rethe', 'Astron', 'Thrimidge', 'Forelithe', 'Afterlithe', 
-		  'Wedmath', 'Halimath', 'Winterfilth', 'Blotmath', 'Foreyule');
-    my @holidays = ('', '2 Yule', '1 Lithe', "Midyear's day", 'Overlithe', '2 Lithe', '1 Yule');
 
     if ($args{month}) {
 	foreach my $itr (1..12) {
-	    $args{month} = $itr if $args{month} eq $months[$itr];
+	    $args{month} = $itr if $args{month} eq $month_names[$itr];
 	}
     }
     if ($args{holiday}) {
 	foreach my $itr (1..6) {
-	    $args{holiday} = $itr if $args{holiday} eq $holidays[$itr];
+	    $args{holiday} = $itr if $args{holiday} eq $holiday_names[$itr];
 	}
     }
 
@@ -230,7 +233,7 @@ sub from_epoch {
     $self->{recalc} = 1;
 
     return bless $self, $class;
-} # end sub from_epoch
+}
 
 sub now {
     my ($class, %args) = @_;
@@ -345,9 +348,7 @@ sub month {
 
 sub month_name {
     my $self = shift;
-    my @months = ('', 'Afteryule', 'Solmath', 'Rethe', 'Astron', 'Thrimidge', 'Forelithe', 'Afterlithe', 
-		  'Wedmath', 'Halimath', 'Winterfilth', 'Blotmath', 'Foreyule');
-    return $months[$self->month];
+    return $month_names[$self->month];
 } #end sub month_name
 
 sub day_of_month {
@@ -368,17 +369,25 @@ sub day_of_week {
 sub wday { return $_[0]->day_of_week; }
 sub dow { return $_[0]->day_of_week; }
 
-sub day_name {
-    my $self = shift;
-    my @days = ('', 'Sterday', 'Sunday', 'Monday', 'Trewsday', 'Hevensday', 'Mersday', 'Highday');
-    return $days[$self->day_of_week];
-} # end sub day_name
+{
+    my @days = ( undef, 'Sterday', 'Sunday', 'Monday', 'Trewsday',
+	'Hevensday', 'Mersday', 'Highday' );
 
-sub day_name_trad {
-    my $self = shift;
-    my @days = ('', 'Sterrendei', 'Sunnendei', 'Monendei', 'Trewesdei', 'Hevenesdei', 'Meresdei', 'Highdei');
-    return $days[$self->day_of_week];
-} # end sub trad_day_name
+    sub day_name {
+	my $self = shift;
+	return $days[$self->day_of_week];
+    }
+}
+
+{
+    my @days = ( undef, 'Sterrendei', 'Sunnendei', 'Monendei',
+	'Trewesdei', 'Hevenesdei', 'Meresdei', 'Highdei' );
+
+    sub day_name_trad {
+	my $self = shift;
+	return $days[$self->day_of_week];
+    }
+}
 
 sub holiday {
     my $self = shift;  
@@ -388,8 +397,7 @@ sub holiday {
 
 sub holiday_name {
     my $self = shift;
-    my @holidays = ('', '2 Yule', '1 Lithe', "Midyear's day", 'Overlithe', '2 Lithe', '1 Yule');
-    return $holidays[$self->holiday];
+    return $holiday_names[$self->holiday];
 } # end sub holiday_name
 
 sub is_leap_year { 
@@ -446,19 +454,16 @@ sub utc_rd_as_seconds { return $_[0]->{dt}->utc_rd_as_seconds; }
 sub set {
     my ($self, %args) = @_;
     my %dt_args;
-    my @months = ('', 'Afteryule', 'Solmath', 'Rethe', 'Astron', 'Thrimidge', 'Forelithe', 'Afterlithe', 
-		  'Wedmath', 'Halimath', 'Winterfilth', 'Blotmath', 'Foreyule');
-    my @holidays = ('', '2 Yule', '1 Lithe', "Midyear's day", 'Overlithe', '2 Lithe', '1 Yule');
     $self->_recalc_Shire if $self->{recalc};
 
     if ($args{month}) {
 	foreach my $itr (1..12) {
-	    $args{month} = $itr if $args{month} eq $months[$itr];
+	    $args{month} = $itr if $args{month} eq $month_names[$itr];
 	}
     }
     if ($args{holiday}) {
 	foreach my $itr (1..6) {
-	    $args{holiday} = $itr if $args{holiday} eq $holidays[$itr];
+	    $args{holiday} = $itr if $args{holiday} eq $holiday_names[$itr];
 	}
     }
 
@@ -558,19 +563,19 @@ sub _stringify {
     return $returntext;
 }
 
-sub on_date {
-    my $self = shift;
-    my ($returntext, %events);
-    $self->_recalc_Shire if $self->{recalc};
+{
+    # %events has the following structure.  It is a hash of hashes.  The
+    # top level hash is keyed by the numbers 0 - 12.  1-12 refer to the
+    # months and zero is reserved to holidays.  The second level hash is
+    # keyed by the date 1-30 within the month, or 1-6 for the six
+    # holidays.  The values of the level 2 hashes are the events we want
+    # to return if the day matches up
 
-    # %events has the following structure.  It is a hash of hashes.
-    # The top level hash is keyed by the numbers 0 - 12.  1-12 refer to 
-    # the months and zero is reserved to holidays.  The second level hash
-    # is keyed by the date 1-30 within the month, or 1-6 for the six holidays.
-    # The values of the level 2 hashes are the events we want to return if
-    # the day matches up
+    my %events;
+
     $events{0} = { 3  => "Wedding of King Elessar and Arwen, 1419.\n"
 		   };
+
     $events{1} = { 8  => "The Company of the Ring reaches Hollin, 1419.\n",
 		   13 => "The Company of the Ring reaches the West-gate of Moria at nightfall, 1419.\n",
 		   14 => "The Company of the Ring spends the night in Moria hall 21, 1419.\n",
@@ -580,6 +585,7 @@ sub on_date {
 		   25 => "Gandalf casts down the Balrog, and passes away.\n" .
 		       "His body lies on the peak of Zirakzigil, 1419.\n"
 		   };
+
     $events{2} = { 14 => "Frodo and Sam look in the Mirror of Galadriel, 1419.\n" .
 		       "Gandalf returns to life, and lies in a trance, 1419.\n",
 		   16 => "Company of the Ring says farewell to Lorien --\n" . 
@@ -602,6 +608,7 @@ sub on_date {
 		   30 => "Entmoot begins, 1419.\n" .
 		       "Eomer, returning to Edoras, meets Aragorn, 1419.\n"
 		   };
+
     $events{3} = { 1  => "Aragorn meets Gandalf the White, and they set out for Edoras, 1419.\n" .
 		       "Faramir leaves Minas Tirith on an errand to Ithilien, 1419.\n",
 		   2  => "The Rohirrim ride west against Saruman, 1419.\n" .
@@ -654,22 +661,28 @@ sub on_date {
 		   27 => "Bard II and Thorin III Stonehelm drive the enemy from Dale, 1419.\n",
 		   28 => "Celeborn crosses the Anduin and begins destruction of Dol Guldur, 1419.\n"
 		   };
+
     $events{4} = { 6  => "The mallorn tree flowers in the party field, 1420.\n",
 	           8  => "Ring bearers are honored on the fields of Cormallen, 1419.\n",
 	           12 => "Gandalf arrives in Hobbiton, 1418\n"
 	           };
+
     $events{5} = { 1  => "Crowning of King Elessar, 1419.\n" .
 		       "Samwise marries Rose, 1420.\n"
 		   };
+
     $events{6} = { 20 => "Sauron attacks Osgiliath, 1418.\n" . 
 		       "Thranduil is attacked, and Gollum escapes, 1418.\n"
 		   };
+
     $events{7} = { 4  => "Boromir sets out from Minas Tirith, 1418\n",
 		   10 => "Gandalf imprisoned in Orthanc, 1418\n",
 		   19 => "Funeral Escort of King Theoden leaves Minas Tirith, 1419.\n"
 		   };
+
     $events{8} = { 10 => "Funeral of King Theoden, 1419.\n"
 		   };
+
     $events{9} = { 18 => "Gandalf escapes from Orthanc in the early hours, 1418.\n",
 		   19 => "Gandalf comes to Edoras as a beggar, and is refused admittance, 1418",
 		   20 => "Gandalf gains entrance to Edoras.  Theoden commands him to go:\n" .
@@ -692,6 +705,7 @@ sub on_date {
 		   30 => "Crickhollow and the inn at Bree are raided in the early hours, 1418.\n" .
 		       "Frodo leaves Bree, 1418.\n",
             	   };
+
     $events{10} = { 3  => "Gandalf attacked at night on Weathertop, 1418.\n",
 		    5  => "Gandalf and the Hobbits leave Rivendell, 1419.\n",
 		    6  => "The camp under Weathertop is attacked at night and Frodo is wounded, 1418.\n",
@@ -704,23 +718,31 @@ sub on_date {
 			"Boromir arrives at Rivendell at night, 1418.\n",
 		    25 => "Council of Elrond, 1418.\n",
 		    30 => "The four Hobbits arrive at the Brandywine Bridge in the dark, 1419.\n"
-		    }; 
+		    };
+
     $events{11} = { 3  => "Battle of Bywater and passing of Saruman, 1419.\n" .
 			"End of the War of the Ring, 1419.\n"
 		  };
     $events{12} = { 25 => "The Company of the Ring leaves Rivendell at dusk, 1418.\n"
 		    };
 
-    if ($self->{holiday} and defined($events{0}->{$self->{holiday}})) {
-	$returntext .= "$self\n\n" . $events{0}->{$self->{holiday}};
-    } elsif (defined($events{$self->{month}}->{$self->{day}})) {
-	$returntext .= "$self\n\n" . $events{$self->{month}}->{$self->{day}};
-    } else {
-	$returntext = "$self\n";
-    }
+    sub on_date {
+	my $self = shift;
+	my $returntext;
+	$self->_recalc_Shire if $self->{recalc};
 
-    return $returntext;
-} #end sub on_date
+
+	if ($self->{holiday} and defined($events{0}->{$self->{holiday}})) {
+	    $returntext .= "$self\n\n" . $events{0}->{$self->{holiday}};
+	} elsif (defined($events{$self->{month}}->{$self->{day}})) {
+	    $returntext .= "$self\n\n" . $events{$self->{month}}->{$self->{day}};
+	} else {
+	    $returntext = "$self\n";
+	}
+
+	return $returntext;
+    }
+}
 
 sub _croak {
     my @msg = @_;
