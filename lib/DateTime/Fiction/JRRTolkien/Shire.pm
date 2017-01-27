@@ -60,10 +60,10 @@ sub _recalc_DateTime {
 	$gregleap = 0;
 	$gregleap = 1 if (($dt_args{year} % 4 == 0) and ($dt_args{year} % 100 != 0));
 	$gregleap = 1 if ($dt_args{year} % 400 == 0);
-	if ($gregleap) { 
+	if ($gregleap) {
 	    $yday += 366;
-	} else { 
-	    $yday += 365; 
+	} else {
+	    $yday += 365;
 	}
     } else {
 	$gregleap = 0;
@@ -130,7 +130,7 @@ sub _recalc_Shire {
 	++$self->{year};
 	$yday -= 366;
 	$self->{leapyear} = 0;
-    } elsif (! $self->{leapyear} && $yday > 365) { 
+    } elsif (! $self->{leapyear} && $yday > 365) {
 	++$self->{year};
 	$yday -= 365;
 	$self->{leapyear} = 0;
@@ -335,16 +335,16 @@ sub calendar_name {
 sub clone { return bless { %{ $_[0] } }, ref $_[0] } # Stolen from DateTime.pm
 
 # Get methods
-sub year { 
-    my $self = shift;  
-    $self->_recalc_Shire if $self->{recalc}; 
-    return $self->{year}; 
+sub year {
+    my $self = shift;
+    $self->_recalc_Shire if $self->{recalc};
+    return $self->{year};
 } # end sub year
 
-sub month { 
-    my $self = shift;  
-    $self->_recalc_Shire if $self->{recalc}; 
-    return $self->{month}; 
+sub month {
+    my $self = shift;
+    $self->_recalc_Shire if $self->{recalc};
+    return $self->{month};
 } # end sub month
 
 sub month_name {
@@ -353,8 +353,8 @@ sub month_name {
 } #end sub month_name
 
 sub day_of_month {
-    my $self = shift;  
-    $self->_recalc_Shire if $self->{recalc}; 
+    my $self = shift;
+    $self->_recalc_Shire if $self->{recalc};
     return $self->{day};
 } # end sub day_of_month
 
@@ -362,8 +362,8 @@ sub day { return $_[0]->day_of_month; }
 sub mday { return $_[0]->day_of_month; }
 
 sub day_of_week {
-    my $self = shift;  
-    $self->_recalc_Shire if $self->{recalc}; 
+    my $self = shift;
+    $self->_recalc_Shire if $self->{recalc};
     return $self->{wday};
 } # end sub day_of_week
 
@@ -391,8 +391,8 @@ sub dow { return $_[0]->day_of_week; }
 }
 
 sub holiday {
-    my $self = shift;  
-    $self->_recalc_Shire if $self->{recalc}; 
+    my $self = shift;
+    $self->_recalc_Shire if $self->{recalc};
     return $self->{holiday};
 } # end sub holiday
 
@@ -401,9 +401,9 @@ sub holiday_name {
     return $holiday_names[$self->holiday];
 } # end sub holiday_name
 
-sub is_leap_year { 
-    my $self = shift;  
-    $self->_recalc_Shire if $self->{recalc}; 
+sub is_leap_year {
+    my $self = shift;
+    $self->_recalc_Shire if $self->{recalc};
     return $self->{leapyear};
 } # end is_leap_year
 
@@ -502,11 +502,11 @@ sub set {
         _croak( 'Invalid day given to set method' )
 	    if (int($self->{day}) < 1) || (int($self->{day}) > 30);
     }
-    
+
     foreach my $arg (qw(hour minute second nanosecond locale)) {
 	$dt_args{$arg} = $args{$arg} if defined $args{$arg};
     }
-   
+
     $self->_recalc_DateTime(%dt_args);
     $self->{recalc} = 1; # for the weekday
 
@@ -532,7 +532,7 @@ sub truncate : method {		## no critic (ProhibitBuiltInHomonyms)
     return $self;
 }
 
-sub set_time_zone { 
+sub set_time_zone {
     my ($self, $tz) = @_;
     $self->{dt}->set_time_zone($tz);
     $self->{recalc} = 1; # in case the day flips when the timezone changes
@@ -589,7 +589,7 @@ sub _stringify {
 
     $events{2} = { 14 => "Frodo and Sam look in the Mirror of Galadriel, 1419.\n" .
 		       "Gandalf returns to life, and lies in a trance, 1419.\n",
-		   16 => "Company of the Ring says farewell to Lorien --\n" . 
+		   16 => "Company of the Ring says farewell to Lorien --\n" .
 		       "Gollum observes departure, 1419.\n",
 		   17 => "Gwaihir the eagle bears Gandalf to Lorien, 1419.\n",
 		   25 => "The Company of the Ring pass the Argonath and camp at Parth Galen, 1419.\n" .
@@ -619,11 +619,11 @@ sub _stringify {
 		       "Ents complete the destruction of Isengard.\n",
 		   4  => "Theoden and Gandalf set out from Helm's Deep for Isengard, 1419.\n" .
 		       "Frodo reaches the slag mound on the edge of the of the Morannon, 1419.\n",
-		   5  => "Theoden reaches Isengard at noon; parley with Saruman in Orthanc, 1419.\n" . 
+		   5  => "Theoden reaches Isengard at noon; parley with Saruman in Orthanc, 1419.\n" .
 		       "Gandalf sets out with Peregrin for Minas Tirith, 1419.\n",
-		   6  => "Aragorn overtaken by the Dunedain in the early hours, 1419.\n", 
+		   6  => "Aragorn overtaken by the Dunedain in the early hours, 1419.\n",
 		   7  => "Frodo taken by Faramir to Henneth Annun, 1419.\n" .
-		       "Aragorn comes to Dunharrow at nightfall, 1419.\n", 
+		       "Aragorn comes to Dunharrow at nightfall, 1419.\n",
 		   8  => "Aragorn takes the \"Paths of the Dead\", and reaches Erech at midnight, 1419.\n".
 		       "Frodo leaves Henneth Annun, 1419.\n",
 		   9  => "Gandalf reaches Minas Tirith, 1419.\n" .
@@ -632,7 +632,7 @@ sub _stringify {
 		       "The Rohirrim are mustered and ride from Harrowdale, 1419.\n" .
 		       "Faramir rescued by Gandalf at the gates of Minas Tirith, 1419.\n" .
 		       "An army from the Morannon takes Cair Andros and passes in Anorien, 1419.\n",
-		   11 => "Gollum visits Shelob, 1419.\n" . 
+		   11 => "Gollum visits Shelob, 1419.\n" .
 		       "Denethor sends Faramir to Osgiliath, 1419.\n" .
 		       "Eastern Rohan is invaded and Lorien assaulted, 1419.\n",
 		   12 => "Gollum leads Frodo into Shelob's lair, 1419.\n" .
@@ -672,7 +672,7 @@ sub _stringify {
 		       "Samwise marries Rose, 1420.\n"
 		   };
 
-    $events{6} = { 20 => "Sauron attacks Osgiliath, 1418.\n" . 
+    $events{6} = { 20 => "Sauron attacks Osgiliath, 1418.\n" .
 		       "Thranduil is attacked, and Gollum escapes, 1418.\n"
 		   };
 
@@ -689,13 +689,13 @@ sub _stringify {
 		   20 => "Gandalf gains entrance to Edoras.  Theoden commands him to go:\n" .
 		       "\"Take any horse, only be gone ere tomorrow is old\", 1418.\n",
 		   21 => "The hobbits return to Rivendell, 1419.\n",
-		   22 => "Birthday of Bilbo and Frodo.\n" .  
-		       "The Black Riders reach Sarn Ford at evening;\n" . 
+		   22 => "Birthday of Bilbo and Frodo.\n" .
+		       "The Black Riders reach Sarn Ford at evening;\n" .
 		       "  they drive off the guard of Rangers, 1418.\n" .
-		       "Saruman comes to the Shire, 1419.\n",   
+		       "Saruman comes to the Shire, 1419.\n",
 		   23 => "Four Black Riders enter the shire before dawn.  The others pursue \n" .
 		       "the Rangers eastward and then return to watch the Greenway, 1418.\n" .
-		       "A Black Rider comes to Hobbiton at nightfall, 1418.\n" . 
+		       "A Black Rider comes to Hobbiton at nightfall, 1418.\n" .
 		       "Frodo leaves Bag End, 1418.\n" .
 		       "Gandalf having tamed Shadowfax rides from Rohan, 1418.\n",
 		   26 => "Frodo comes to Bombadil, 1418\n",
@@ -712,7 +712,7 @@ sub _stringify {
 		    6  => "The camp under Weathertop is attacked at night and Frodo is wounded, 1418.\n",
 		    11 => "Glorfindel drives the Black Riders off the Bridge of Mitheithel, 1418.\n",
 		    13 => "Frodo crosses the Bridge of Mitheithel, 1418.\n",
-		    18 => "Glorfindel finds Frodo at dusk, 1418.\n" . 
+		    18 => "Glorfindel finds Frodo at dusk, 1418.\n" .
 			"Gandalf reaches Rivendell, 1418.\n",
 		    20 => "Escape across the Ford of Bruinen, 1418.\n",
 		    24 => "Frodo recovers and wakes, 1418.\n" .
@@ -830,7 +830,7 @@ DateTime::Fiction::JRRTolkien::Shire - Implementation of the calendar used by th
     print $shire->on_date;
 
 =head1 DESCRIPTION
- 
+
 Implementation of the calendar used by the hobbits in J.R.R. Tolkien's
 exceptional novel The Lord of The Rings, as described in Appendix D of
 that book (except where noted).  The calendar has 12 months, each with
@@ -893,13 +893,13 @@ Same as in DateTime.
 
 =item * now( ... )
 
-Same as in DateTime.  Note that this is equivalent to 
+Same as in DateTime.  Note that this is equivalent to
 
     from_epoch( epoch => time() );
 
 =item * today( ... )
 
-Same as in DateTime.  
+Same as in DateTime.
 
 =item * from_object( object => $object, ... )
 
@@ -941,7 +941,7 @@ returns the year.
 
 =item * month
 
-Returns the month number, from 1 to 12.  If the date is a holiday, 
+Returns the month number, from 1 to 12.  If the date is a holiday,
 a 0 is returned for the month.
 
 =item * month_name
@@ -985,7 +985,7 @@ string is returned.
 
 =item * is_leap_year
 
-Returns 1 if the year is a leap year, and 0 otherwise.  
+Returns 1 if the year is a leap year, and 0 otherwise.
 
 Leap years are given the same rule as the Gregorian calendar.  Every
 four years is a leap year, except the first year of the century, which
@@ -1032,7 +1032,7 @@ documentation for more information.
 
 =item * utc_rd_as_seconds
 
-Returns the UTC rata die days entirely as seconds.  
+Returns the UTC rata die days entirely as seconds.
 
 =item * on_date
 
@@ -1041,7 +1041,7 @@ on it (as defined in Appendix B of the Lord of the Rings), those events
 are also printed.  This can be fun to put in a F<.bashrc> or F<.cshrc>.
 Try
 
-    perl -MDateTime::Fiction::JRRTolkien::Shire 
+    perl -MDateTime::Fiction::JRRTolkien::Shire
       -le 'print DateTime::Fiction::JRRTolkien::Shire->now->on_date;'
 
 =back
@@ -1085,7 +1085,7 @@ with time support.
 
 All comparison operators should work, just as in DateTime.  In addition,
 all DateTime::Fiction::JRRTolkien::Shire objects will interpolate into
-a string representing the date when used in a double-quoted string.  
+a string representing the date when used in a double-quoted string.
 
 =head1 DURATIONS AND DATE MATH
 
