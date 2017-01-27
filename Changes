@@ -1,3 +1,26 @@
+0.20_01		2017-01-27	T. R. Wyant
+    Add time zone accessors time_zone(), time_zone_long_name(), and
+    time_zone_short_name().
+
+    Clean up comments and code (mainly line length, and strip trailing
+    spaces).
+
+    Pull static data out of subroutines.
+
+    Add author tests.
+
+    Bring code up to my usual level of  Perl::Critic compliance.
+
+    Merge branch 'manwar-add-abstract-to-pod'.  This pull request added
+    the one-line abstract that is supposed to appear on the NAME line of
+    the POD. Thanks to Mohammad S Anwar for the patch.
+
+    Add method calendar_name() (returns 'Shire')
+
+    Replace die() with Carp::croak().
+
+    Ditch 'use vars'. Add 'use warnings'.
+
 0.20		2017-01-25	T. R. Wyant
     Replace LICENSE file with LICENSES/ dir. The new directory contains
     the licenses as individual files.

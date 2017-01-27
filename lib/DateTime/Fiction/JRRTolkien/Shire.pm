@@ -8,7 +8,7 @@ use warnings;
 use Carp ();
 use DateTime 0.14;
 
-our $VERSION = '0.20';
+our $VERSION = '0.20_01';
 
 my @holiday_names = ( undef, '2 Yule', '1 Lithe', "Midyear's day",
     'Overlithe', '2 Lithe', '1 Yule' );
