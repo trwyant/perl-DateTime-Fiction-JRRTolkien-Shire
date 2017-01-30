@@ -1,3 +1,10 @@
+0.20_02		2017-01-30	T. R. Wyant
+    Make week_number() return 0 for Midyear's day and the Overlithe.
+
+    Regularize POD.
+
+    Minor correction to on_date() text.
+
 0.20_01		2017-01-27	T. R. Wyant
     Add time zone accessors time_zone(), time_zone_long_name(), and
     time_zone_short_name().

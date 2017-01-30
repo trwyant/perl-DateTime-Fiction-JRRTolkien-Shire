@@ -8,7 +8,7 @@ use warnings;
 use Carp ();
 use DateTime 0.14;
 
-our $VERSION = '0.20_01';
+our $VERSION = '0.20_02';
 
 use constant DAY_NUMBER_MIDYEARS_DAY	=> 183;
 
