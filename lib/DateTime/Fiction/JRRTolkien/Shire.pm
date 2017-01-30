@@ -138,7 +138,8 @@ sub _recalc_Shire {
 	$self->{leapyear} = 1 if $self->{year} % 400 == 0;
     }
 
-    # The overlithe only occurs on a leapyear.  By checking for it first, we can ignore leap years after this point
+    # The overlithe only occurs on a leapyear.  By checking for it
+    # first, we can ignore leap years after this point
     if ($self->{leapyear}) {
 	$self->{holiday} = 4 if ($yday == 184); #Overlithe
 	--$yday if $yday > 184;
@@ -766,7 +767,7 @@ __END__
 
 =head1 NAME
 
-DateTime::Fiction::JRRTolkien::Shire - Implementation of the calendar used by the Hobbits.
+DateTime::Fiction::JRRTolkien::Shire - DateTime implementation of the Shire calendar.
 
 =head1 SYNOPSIS
 
@@ -857,9 +858,17 @@ DateTime documentation.
 
 =head2 Constructors
 
-=over
+=head3 new
 
-=item * new( ... )
+ my $dt_ring = DateTime::Fiction::JRRTolkien::Shire->new(
+     year   => 1419,
+     month  => 3,
+     day    => 25,
+ );
+ my $dt_aa = DateTime::Fiction::JRRTolkien::Shire->new(
+     year    => 1419,
+     holiday => 3,     # Midyear's day
+ );
 
 This method takes a year, month, and day parameter, or a year and
 holiday parameter.  The year can be any value.  The month can be
@@ -887,103 +896,174 @@ times.
 If a day is not given, it will default to 1.  If neither a day or month
 is given, the date will default to 2 Yule, the first day of the year.
 
-=item * from_epoch( epoch => $epoch, ... )
+=head3 from_epoch
+
+     $dts = DateTime::Fiction::JRRTolkien::Shire->from_epoch(
+         epoch  => time,
+         ...
+     );
 
 Same as in DateTime.
 
-=item * now( ... )
+=head3 now
+
+    $dts = DateTime::Fiction::JRRTolkien::Shire->now( ... );
 
 Same as in DateTime.  Note that this is equivalent to
 
     from_epoch( epoch => time() );
 
-=item * today( ... )
+=head3 today
+
+    $dts = DateTime::Fiction::JRRTolkien::Shire->today( ... );
 
 Same as in DateTime.
 
-=item * from_object( object => $object, ... )
+=head3 from_object
 
-Same as in DateTime.  Takes any other DateTime calendar object and
+    $dts = DateTime::Fiction::JRRTolkien::Shire->from_object(
+        object  => $object,
+        ...
+    );
+
+Same as in DateTime. Takes any other DateTime calendar object and
 converts it to a DateTime::Fiction::JRRTolkien::Shire object.
 
-=item * last_day_of_month( ... )
+=head3 last_day_of_month
 
-Same as in DateTime.  Like the new constructor, but it does not take a
-day parameter.  Instead, the day is set to 30, which is the last day of
-any month in the shire calendar.  A holiday parameter should not be used
-with this method.  Use new instead.
+    $dts = DateTime::Fiction::JRRTolkien::Shire->last_day_of_month(
+        year    => 1419,
+        month   => 3,
+        ...
+    );
 
-=item * from_day_of_year( year => $year, day_of_year => $yday)
+Same as in DateTime.  Like the C<new()> constructor, but it does not
+take a day parameter.  Instead, the day is set to 30, which is the last
+day of any month in the shire calendar. A holiday parameter should not
+be used with this method.  Use L<new()|/new> instead.
+
+=head3 from_day_of_year
+
+    $dts = DateTime::Fiction::JRRTolkien::Shire->last_day_of_month(
+        year           => 1419,
+        day_of_year    => 86,
+        ...
+    );
 
 Same as in DateTime.  Gets the date from the given year and day of year,
 both of which must be given.  Hour, minute, second, time_zone, etc.
 parameters may also be given, and will be passed to the underlying
-DateTime object, just like in new.
+DateTime object, just like in C<new()>.
 
-=item * clone
+=head3 clone
+
+    $dts2 = $dts->clone();
 
 Creates a new Shire object that is the same date (and underlying time)
 as the calling object.
 
-=back
+=head2 "Get" Methods
 
-=head2 Get Methods
+=head3 calendar_name
 
-=over
-
-=item * calendar_name
+    print $dts->calendar_name(), "\n";
 
 Returns C<'Shire'>.
 
-=item * year
+=head3 year
 
-returns the year.
+    print 'Year: ', $dts->year(), "\n";
 
-=item * month
+Returns the year.
 
-Returns the month number, from 1 to 12.  If the date is a holiday,
-a 0 is returned for the month.
+=head3 month
 
-=item * month_name
+    print 'Month: ', $dts->month(), "\n";
+
+Returns the month number, from 1 to 12.  If the date is a holiday, a 0
+is returned for the month.
+
+=head3 month_name
+
+    print 'Month name: ', $dts->month_name(), "\n";
 
 Returns the name of the month.  If the date is a holiday, an empty
 string is returned.
 
-=item * day_of_month, day, mday
+=head3 day_of_month
+
+    print 'Day of month: ', $dts->day_of_month(), "\n";
 
 Returns the day of the current month, from 1 to 30.  If the date is a
 holiday, 0 is returned.
 
-=item * day_of_week, wday, dow
+=head3 day
+
+Synonym for L<day_of_month()|/day_of_month>.
+
+=head3 mday
+
+Synonym for L<day_of_month()|/day_of_month>.
+
+=head3 day_of_week
+
+    print 'Day of week: ', $dts->day_of_week(), "\n";
 
 Returns the day of the week from 1 to 7.  If the day is not part of
 any week (Midyear's Day or the Overlithe), 0 is returned.
 
-=item * day_name
+=head3 wday
+
+Synonym for L<day_of_week|/day_of_week>.
+
+=head3 dow
+
+Synonym for L<day_of_week|/day_of_week>.
+
+=head3 day_name
+
+    print 'Name of day of week: ', $dts->day_name(), "\n";
 
 Returns the name of the day of the week, or an empty string if the
 day is not part of any week.
 
-=item * day_name_trad
+=head3 day_name_trad
 
-Like day_name, but returns the more traditional name of the days
-of the week, as defined in Appendix D.
+    print 'Traditional name of day of week: ',
+        $dts->day_name_trad(), "\n";
 
-=item * day_of year, doy
+Like day_name, but returns the more traditional name of the days of the
+week, as defined in Appendix D.
+
+=head3 day_of_year
+
+    print 'Day of year: ', $dts->day_of_year(), "\n";
 
 Returns the day of the year, from 1 to 366
 
-=item * holiday
+=head3 doy
 
-Returns the holiday number (given in the description of the new
-constructor).  If the day is not a holiday, 0 is returned.
+Synonym for L<day_of_year()|/day_of_year>.
 
-=item * holiday_name
+=head3 holiday
 
-Returns the name of the holiday.  If the day is not a holiday, an empty
+    print 'Holiday number: ', $dts->holiday(), "\n";
+
+Returns the holiday number (given in the description of the
+L<new()|/new> constructor).  If the day is not a holiday, 0 is returned.
+
+=head3 holiday_name
+
+    print 'Holiday name: ', $dts->holiday_name(), "\n";
+
+Returns the name of the holiday. If the day is not a holiday, an empty
 string is returned.
 
-=item * is_leap_year
+=head3 is_leap_year
+
+    my @ly = ( 'is not', 'is' );
+    printf "%d %s a leap year\n", $dts->year(),
+        $ly[ $dts->is_leap_year() ];
 
 Returns 1 if the year is a leap year, and 0 otherwise.
 
@@ -1000,57 +1080,67 @@ match up with what they're used to, I have changed this rule for this
 implementation.  However, this does mean that this calendar
 implementation is not strictly that described in Appendix D.
 
-=item * week
+=head3 week_year
 
-A two element array, where the first is the week_year and the latter is
-the week_number.
-
-=item * week_year
+    print 'The week year is ', $dts->week_year(), "\n";
 
 This is always the same as the year in the shire calendar, but is
 present for compatibility with other DateTime objects.
 
-=item * week_number
+=head3 week_number
+
+    print 'The week number is ', $dts->week_number(), "\n";
 
 Returns the week of the year.
 
-=item * epoch
+=head3 week
+
+    printf "Year %d; Week number %d\n", $dts->week();
+
+Returns a two element array, where the first is the week_year and the
+latter is the week_number.
+
+=head3 epoch
+
+    print scalar gmtime $dts->epoch(), "UT\n";
 
 Returns the epoch of the given object, just like in DateTime.
 
-=item * hires_epoch
+=head3 hires_epoch
 
 Returns the epoch as a floating point number, with the fractional
 portion for fractional seconds.  Functions the same as in DateTime.
 
-=item * utc_rd_values
+=head3 utc_rd_values
 
 Returns the UTC rata die days, seconds, and nanoseconds. Ignores
 fractional seconds.  This is the standard method used by other methods
 to convert the shire calendar to other calendars.  See the DateTime
 documentation for more information.
 
-=item * utc_rd_as_seconds
+=head3 utc_rd_as_seconds
 
 Returns the UTC rata die days entirely as seconds.
 
-=item * on_date
+=head3 on_date
 
-Prints out the current day.  If the day has some events that transpired
+Returns the current day, with day of week if present, and with all names
+in full.  If the day has some events that transpired
 on it (as defined in Appendix B of the Lord of the Rings), those events
-are also printed.  This can be fun to put in a F<.bashrc> or F<.cshrc>.
+are appended. This can be fun to put in a F<.bashrc> or F<.cshrc>.
 Try
 
     perl -MDateTime::Fiction::JRRTolkien::Shire
       -le 'print DateTime::Fiction::JRRTolkien::Shire->now->on_date;'
 
-=back
+=head2 "Set" Methods
 
-=head2 Set Methods
+=head3 set
 
-=over
-
-=item * set( ... )
+    $dts->set(
+        month   => 3,
+        day     => 25,
+    );
 
 Allows the day, month, and year to be changed.  It takes any parameters
 allowed by new constructor, including all those supported by DateTime
@@ -1063,29 +1153,32 @@ values are not supplied.  However, with holidays not falling in any
 month, it is recommended that a day and month always be given together.
 Otherwise, unanticipated results may occur.
 
-As in the new constructor, time parameters have no effect on the shire
-dates returned.  However, they are maintained in case the object is
-converted to another calendar which supports time.
+As in the L<new()|/new> constructor, time parameters have no effect on
+the shire dates returned.  However, they are maintained in case the
+object is converted to another calendar which supports time.
 
-=item * Truncate( ... )
+=head3 truncate
 
-Same as in DateTime.  If the date is a holiday, a truncation to either
-'month' or 'day' is equivalent.  Otherwise, this functions as specified
-in the DateTime object.
+    $dts->truncate( to => 'day' );
 
-=item * set_time_zone( $tz )
+Same as in DateTime. If the date is a holiday, truncation to C<'month'>
+is equivalent to truncation to C<'day'>, and similar for holidays that
+are not part of any week. Otherwise, this functions as specified in the
+DateTime object.
 
-Just like in DateTime.  This method has no effect on the shire calendar,
+=head3 set_time_zone
+
+    $dts->set_time_zone( 'UTC' );
+
+Just like in DateTime. This method has no effect on the shire calendar,
 but be stored with the date if it is ever converted to another calendar
 with time support.
-
-=back
 
 =head2 Comparisons and Stringification
 
 All comparison operators should work, just as in DateTime.  In addition,
-all DateTime::Fiction::JRRTolkien::Shire objects will interpolate into
-a string representing the date when used in a double-quoted string.
+all C<DateTime::Fiction::JRRTolkien::Shire> objects will interpolate
+into a string representing the date when used in a double-quoted string.
 
 =head1 DURATIONS AND DATE MATH
 
@@ -1099,7 +1192,7 @@ and then the DateTime object converted back to a Shire object.
 
 =head1 NOTE: YEAR CALCULATION
 
-L<http://www.glyhweb.com/arda/f/fourthage.html> references a letter sent
+L<http://www.glyphweb.com/arda/f/fourthage.html> references a letter sent
 by Tolkien in 1958 in which he estimates approximately 6000 years have
 passed since the War of the Ring and the end of the Third Age.  (Thanks
 to Danny O'Brien from sending me this link).  I took this approximate as
@@ -1153,8 +1246,8 @@ merchantability or fitness for a particular purpose.
 
 =head1 SUPPORT
 
-Support on this module may be obtained by emailing me.  However, I am
-not a developer on the other classes in the DateTime project.  For
+Support on this module may be obtained by emailing me. However, I am
+not a developer on the other classes in the DateTime project. For
 support on them, please see the support options in the DateTime
 documentation.
 
