@@ -631,7 +631,7 @@ sub _stringify {
 		   10 => "The Dawnless Day, 1419.\n" .
 		       "The Rohirrim are mustered and ride from Harrowdale, 1419.\n" .
 		       "Faramir rescued by Gandalf at the gates of Minas Tirith, 1419.\n" .
-		       "An army from the Morannon takes Cair Andros and passes in Anorien, 1419.\n",
+		       "An army from the Morannon takes Cair Andros and passes into Anorien, 1419.\n",
 		   11 => "Gollum visits Shelob, 1419.\n" .
 		       "Denethor sends Faramir to Osgiliath, 1419.\n" .
 		       "Eastern Rohan is invaded and Lorien assaulted, 1419.\n",
