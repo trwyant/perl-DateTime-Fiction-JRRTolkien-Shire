@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 24;
+use Test::More tests => 27;
 use DateTime;
 use DateTime::Fiction::JRRTolkien::Shire;
 
@@ -57,5 +57,17 @@ is( $shire->time_zone_long_name(),
     'floating', q<Time zone long name is 'floating'> );
 is( $shire->time_zone_short_name(),
     'floating', q<Time zone short name is 'floating'> );
+
+# Holidays
+
+my $shire_h = DateTime::Fiction::JRRTolkien::Shire->new(
+    year	=> 1419,
+    holiday	=> 3,
+);
+
+is( $shire_h->holiday(), 3, q<Holiday number of Midyear's day> );
+is( $shire_h->holiday_name(), q<Midyear's day>,
+    q<Holiday name of Midyear's day> );
+is( $shire_h->week_number(), 0, q<Week number of Midyear's day> );
 
 # ex: set textwidth=72 :

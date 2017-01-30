@@ -10,6 +10,8 @@ use DateTime 0.14;
 
 our $VERSION = '0.20_01';
 
+use constant DAY_NUMBER_MIDYEARS_DAY	=> 183;
+
 my @holiday_names = ( undef, '2 Yule', '1 Lithe', "Midyear's day",
     'Overlithe', '2 Lithe', '1 Yule' );
 my @month_names = ( undef, 'Afteryule', 'Solmath', 'Rethe', 'Astron',
@@ -32,14 +34,14 @@ sub _recalc_DateTime {
 
     if ($self->{holiday}) {
 	if ($self->{leapyear}) {
-	    $yday = (0, 1, 182, 183, 184, 185, 366)[$self->{holiday}];
+	    $yday = (0, 1, 182, DAY_NUMBER_MIDYEARS_DAY, 184, 185, 366)[$self->{holiday}];
 	} else {
-	    $yday = (0, 1, 182, 183, 0, 184, 365)[$self->{holiday}];
+	    $yday = (0, 1, 182, DAY_NUMBER_MIDYEARS_DAY, 0, 184, 365)[$self->{holiday}];
 	}
     } else {
 	$yday = ($self->{month} - 1) * 30 + $self->{day} + 1; # The +1 is for 2 Yule
 	$yday += 3 if $yday > 181; #Account for the Lithe and Midyear day
-	++$yday if $self->{leapyear} and $yday > 183; #Account for Overlithe
+	++$yday if $self->{leapyear} and $yday > DAY_NUMBER_MIDYEARS_DAY; #Account for Overlithe
     }
     $yday -= 9; # Different Start of years.  We'll adjust this based on the year momentarily
 
@@ -147,14 +149,14 @@ sub _recalc_Shire {
     unless ($self->{holiday}) { # this will only be true if its the Overlithe
 	if ($yday == 1) {$self->{holiday} = 1;} #2 Yule-first day of new year
 	elsif ($yday == 182) {$self->{holiday} = 2;} #1 Lithe
-	elsif ($yday == 183) {$self->{holiday} = 3;} #Midyear's day
+	elsif ($yday == DAY_NUMBER_MIDYEARS_DAY) {$self->{holiday} = 3;} #Midyear's day
 	elsif ($yday == 184) {$self->{holiday} = 5;} #2 Lithe
 	elsif ($yday == 365) {$self->{holiday} = 6;} #1 Yule
     }
 
     # Midyear's day (and Overlithe when applicable) are not in any week, while every other day is
     # Therefore, subtract out midyear's day to make the calculations nice
-    --$yday if $yday > 183;
+    --$yday if $yday > DAY_NUMBER_MIDYEARS_DAY;
     if ($self->{holiday} == 3 or $self->{holiday} == 4) {
 	$self->{wday} = 0;
     } else {
@@ -291,7 +293,7 @@ sub from_day_of_year {
 	    $args{holiday} = 1;
 	} elsif ($doy == 182) {
 	    $args{holiday} = 2;
-	} elsif ($doy == 183) {
+	} elsif ($doy == DAY_NUMBER_MIDYEARS_DAY ) {
 	    $args{holiday} = 3;
 	} elsif ($doy == 184) {
 	    $args{holiday} = 4;
@@ -312,7 +314,7 @@ sub from_day_of_year {
 	    $args{holiday} = 1;
 	} elsif ($doy == 182) {
 	    $args{holiday} = 2;
-	} elsif ($doy == 183) {
+	} elsif ($doy == DAY_NUMBER_MIDYEARS_DAY ) {
 	    $args{holiday} = 3;
 	} elsif ($doy == 184) {
 	    $args{holiday} = 5;
@@ -421,9 +423,11 @@ sub day_of_year {
 	}
     } else {
 	if ($self->{leapyear}) {
-	    $yday = (0, 1, 182, 183, 184, 185, 366)[$self->{holiday}];
+	    $yday = ( 0, 1, 182, DAY_NUMBER_MIDYEARS_DAY, 184, 185,
+		366 )[$self->{holiday}];
 	} else {
-	    $yday = (0, 1, 182, 183, 0, 184, 365)[$self->{holiday}];
+	    $yday = ( 0, 1, 182, DAY_NUMBER_MIDYEARS_DAY, 0, 184,
+		365 )[$self->{holiday}];
 	}
     }
 
@@ -440,11 +444,23 @@ sub week_number {
     my $self = shift;
     my $yday = $self->day_of_year;
 
-    --$yday if $yday > 182; # don't count Midyear's day
-    --$yday if $yday > 182 and $self->is_leap_year; # don't count the Overlithe
+    DAY_NUMBER_MIDYEARS_DAY == $yday
+	and return 0;
+    DAY_NUMBER_MIDYEARS_DAY > $yday
+	and --$yday;
+
+    if ( $self->is_leap_year() ) {
+	# In the following, DAY_NUMBER_MIDYEARS_DAY really refers to the
+	# Ovelithe, because days greater than Midyear's day were
+	# decremented above.
+	DAY_NUMBER_MIDYEARS_DAY == $yday
+	    and return 0;
+	DAY_NUMBER_MIDYEARS_DAY > $yday
+	    and --$yday;
+    }
 
     return int(($yday - 1) / 7) + 1;
-} # end sub week_number
+}
 
 sub epoch { return $_[0]->{dt}->epoch; }
 sub hires_epoch { return $_[0]->{dt}->hires_epoch; }
@@ -1091,7 +1107,8 @@ present for compatibility with other DateTime objects.
 
     print 'The week number is ', $dts->week_number(), "\n";
 
-Returns the week of the year.
+Returns the week of the year, or C<0> for days that are not part of any
+week: Midyear's day and the Overlithe.
 
 =head3 week
 
