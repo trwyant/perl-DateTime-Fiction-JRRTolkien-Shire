@@ -960,7 +960,7 @@ be used with this method.  Use L<new()|/new> instead.
 
 =head3 from_day_of_year
 
-    $dts = DateTime::Fiction::JRRTolkien::Shire->last_day_of_month(
+    $dts = DateTime::Fiction::JRRTolkien::Shire->from_day_of_year(
         year           => 1419,
         day_of_year    => 86,
         ...
@@ -1003,7 +1003,7 @@ is returned for the month.
 
     print 'Month name: ', $dts->month_name(), "\n";
 
-Returns the name of the month.  If the date is a holiday, an empty
+Returns the name of the month. If the date is a holiday, an empty
 string is returned.
 
 =head3 day_of_month
@@ -1217,15 +1217,16 @@ an exact amount and calculated back 6000 years from 1958.  This I set as
 the start of the 4th age (1422 S.R.).  Thus the fourth age begins in our
 B.C 4042.
 
-According to Appendix D of the Lord of the Rings, leap years in hobbit
-calendar are every 4 years unless its the turn of the century, in which
-case it's not a leap year.  Our calendar (Gregorian) uses every 4 years
+According to Appendix D of the Lord of the Rings, leap years in the
+hobbits'
+calendar are every 4 years unless it is the turn of the century, in which
+case it is not a leap year. Our calendar (Gregorian) uses every 4 years
 unless it's 100 years unless its 400 years.  So, if no changes have been
-made to the hobbit's calendar since the end of the third age, their
+made to the hobbits' calendar since the end of the third age, their
 calendar would be about 15 days further behind ours now then when the
 War of the Ring took place.  Implementing this seemed to me to go
 against Tolkien's general habit of converting dates in the novel to our
-equivalents to give us a better sense of time.  My thoughts, at least
+equivalents to give us a better sense of time.  My thought, at least
 right now, is that it is truer to the spirit of things for years to line
 up, and for Midyear's day to still be approximately on the summer
 solstice.  So instead, I have modified Tolkien's description of the
