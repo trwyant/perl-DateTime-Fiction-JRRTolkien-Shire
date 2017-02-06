@@ -702,7 +702,7 @@ sub _stringify {
 		   };
 
     $events{9} = { 18 => "Gandalf escapes from Orthanc in the early hours, 1418.\n",
-		   19 => "Gandalf comes to Edoras as a beggar, and is refused admittance, 1418",
+		   19 => "Gandalf comes to Edoras as a beggar, and is refused admittance, 1418\n",
 		   20 => "Gandalf gains entrance to Edoras.  Theoden commands him to go:\n" .
 		       "\"Take any horse, only be gone ere tomorrow is old\", 1418.\n",
 		   21 => "The hobbits return to Rivendell, 1419.\n",
