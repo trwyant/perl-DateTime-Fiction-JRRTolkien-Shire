@@ -13,6 +13,8 @@ t/02accessor.t
 t/03set.t
 t/04overload.t
 t/05ondate.t
+tools/make-regression
+tools/lib/DateTime/Fiction/JRRTolkien/Shire.pm
 xt/author/changes.t
 xt/author/critic.t
 xt/author/executable.t
