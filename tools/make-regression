@@ -77,7 +77,7 @@ sub test_years {
     my $last = timelocal( 0, 0, 12, 1, 0, $finish_year );
 
     $emit
-	or return ( $last - $epoch ) / 86400 * 28;
+	or return ( $last - $epoch ) / 86400 * 24;
 
     while ( $epoch < $last ) {
 	my ( undef, undef, undef, $day, $mon, $yr ) = localtime $epoch;
