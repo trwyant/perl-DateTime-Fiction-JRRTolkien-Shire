@@ -12,9 +12,9 @@ our $VERSION = '0.21';
 
 use constant DAY_NUMBER_MIDYEARS_DAY	=> 183;
 
-my @holiday_names = ( undef, '2 Yule', '1 Lithe', "Midyear's day",
+my @holiday_names = ( '', '2 Yule', '1 Lithe', "Midyear's day",
     'Overlithe', '2 Lithe', '1 Yule' );
-my @month_names = ( undef, 'Afteryule', 'Solmath', 'Rethe', 'Astron',
+my @month_names = ( '', 'Afteryule', 'Solmath', 'Rethe', 'Astron',
     'Thrimidge', 'Forelithe', 'Afterlithe', 'Wedmath', 'Halimath',
     'Winterfilth', 'Blotmath', 'Foreyule' );
 
@@ -374,7 +374,7 @@ sub wday { return $_[0]->day_of_week; }
 sub dow { return $_[0]->day_of_week; }
 
 {
-    my @days = ( undef, 'Sterday', 'Sunday', 'Monday', 'Trewsday',
+    my @days = ( '', 'Sterday', 'Sunday', 'Monday', 'Trewsday',
 	'Hevensday', 'Mersday', 'Highday' );
 
     sub day_name {
@@ -384,7 +384,7 @@ sub dow { return $_[0]->day_of_week; }
 }
 
 {
-    my @days = ( undef, 'Sterrendei', 'Sunnendei', 'Monendei',
+    my @days = ( '', 'Sterrendei', 'Sunnendei', 'Monendei',
 	'Trewesdei', 'Hevenesdei', 'Meresdei', 'Highdei' );
 
     sub day_name_trad {
@@ -446,7 +446,7 @@ sub week_number {
 
     DAY_NUMBER_MIDYEARS_DAY == $yday
 	and return 0;
-    DAY_NUMBER_MIDYEARS_DAY > $yday
+    DAY_NUMBER_MIDYEARS_DAY < $yday
 	and --$yday;
 
     if ( $self->is_leap_year() ) {
@@ -455,7 +455,7 @@ sub week_number {
 	# decremented above.
 	DAY_NUMBER_MIDYEARS_DAY == $yday
 	    and return 0;
-	DAY_NUMBER_MIDYEARS_DAY > $yday
+	DAY_NUMBER_MIDYEARS_DAY < $yday
 	    and --$yday;
     }
 

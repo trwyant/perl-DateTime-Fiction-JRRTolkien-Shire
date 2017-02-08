@@ -32,7 +32,7 @@ is($shire->day_name_trad, 'Sunnendei');
 
 # 13-14
 is($shire->holiday, 0);
-is($shire->holiday_name, undef);
+is($shire->holiday_name, '');
 
 # 15-16
 is($shire->day_of_year, 86);
