@@ -361,8 +361,8 @@ sub day_of_month {
     return $self->{day};
 } # end sub day_of_month
 
-sub day { return $_[0]->day_of_month; }
-sub mday { return $_[0]->day_of_month; }
+*day = \&day_of_month;	# sub day
+*mday = \&day_of_month;	# sub mday
 
 sub day_of_week {
     my $self = shift;
@@ -370,8 +370,8 @@ sub day_of_week {
     return $self->{wday};
 } # end sub day_of_week
 
-sub wday { return $_[0]->day_of_week; }
-sub dow { return $_[0]->day_of_week; }
+*wday  = \&day_of_week;	# sub wday
+*dow  = \&day_of_week;	# sub dow
 
 {
     my @days = ( '', 'Sterday', 'Sunday', 'Monday', 'Trewsday',
@@ -434,11 +434,11 @@ sub day_of_year {
     return $yday;
 } # end sub day_of_year
 
-sub doy { return $_[0]->day_of_year };
+*doy  = \&day_of_year;	# sub doy
 
 sub week { return ($_[0]->week_year, $_[0]->week_number); }
 
-sub week_year { return $_[0]->year; } # the shire calendar is nice this way
+*week_year  = \&year;	# sub week_year; the shire calendar is nice this way
 
 sub week_number {
     my $self = shift;
@@ -462,10 +462,13 @@ sub week_number {
     return int(($yday - 1) / 7) + 1;
 }
 
-sub epoch { return $_[0]->{dt}->epoch; }
-sub hires_epoch { return $_[0]->{dt}->hires_epoch; }
-sub utc_rd_values { return $_[0]->{dt}->utc_rd_values; }
-sub utc_rd_as_seconds { return $_[0]->{dt}->utc_rd_as_seconds; }
+# sub epoch; sub hires_epoch; sub utc_rd_values; sub utc_rd_as_seconds;
+foreach my $method ( qw{
+    epoch hires_epoch utc_rd_values utc_rd_as_seconds
+} ) {
+    no strict qw{ refs };
+    *$method = sub { $_[0]->{dt}->$method() };
+}
 
 # Set methods
 
