@@ -31,6 +31,7 @@ Mifflin
 Overlithe
 Rolsky
 rata
+Specio
 Sterday
 th
 wday

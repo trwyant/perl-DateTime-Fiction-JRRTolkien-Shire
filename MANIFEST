@@ -1,5 +1,6 @@
 Changes
 lib/DateTime/Fiction/JRRTolkien/Shire.pm
+lib/DateTime/Fiction/JRRTolkien/Shire/Types.pm
 LICENSES/Artistic
 LICENSES/Copying
 Makefile.PL

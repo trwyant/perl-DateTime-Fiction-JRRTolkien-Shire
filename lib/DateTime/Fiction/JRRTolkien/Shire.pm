@@ -23,10 +23,14 @@ use Date::Tolkien::Shire::Data qw{
     GREGORIAN_RATA_DIE_TO_SHIRE
 };
 use DateTime 0.14;
+use DateTime::Fiction::JRRTolkien::Shire::Types;
+use Params::ValidationCompiler ();
 
 our $VERSION = '0.22';
 
 use constant DAY_NUMBER_MIDYEARS_DAY	=> 183;
+
+my @delegate_to_dt = qw( hour minute second nanosecond locale );
 
 # This assumes all the values in the info hashref are valid, and doesn't
 # do validation However, the day and month parameters will be given
@@ -82,107 +86,174 @@ sub _recalc_Shire {
 
 # Constructors
 
-sub new {
-    my ($class, %args) = @_;
-    my ($self, %dt_args );
+{
+    my $validator = Params::ValidationCompiler::validation_for(
+	name			=> '_validation_for_new',
+	name_is_optional	=> 1,
+	params			=> {
+	    year		=> {
+		type		=> t( 'Year' ),
+	    },
+	    month		=> {
+		type		=> t( 'Month' ),
+		optional	=> 1,
+	    },
+	    day			=> {
+		type		=> t( 'DayOfMonth' ),
+		optional	=> 1,
+	    },
+	    holiday		=> {
+		type		=> t( 'Holiday' ),
+		optional	=> 1,
+	    },
+	    hour		=> {
+		type		=> t( 'Hour' ),
+		default		=> 0,
+	    },
+	    minute		=> {
+		type		=> t( 'Minute' ),
+		default		=> 0,
+	    },
+	    second		=> {
+		type		=> t( 'Second' ),
+		default		=> 0,
+	    },
+	    nanosecond		=> {
+		type		=> t( 'Nanosecond' ),
+		default		=> 0,
+	    },
+	    time_zone		=> {
+		type		=> t( 'TimeZone' ),
+		optional	=> 1,
+	    },
+	    locale		=> {
+		type		=> t( 'Locale' ),
+		optional	=> 1,
+	    },
+	    formatter		=> {
+		type		=> t( 'Formatter' ),
+		optional	=> 1,
+	    },
+	},
+    );
 
-    $args{month}
-	and $args{month} = __month_name_to_number( $args{month} );
+    sub new {
+	my ( $class, @args ) = @_;
 
-    $args{holiday}
-	and $args{holiday} = __holiday_name_to_number( $args{holiday} );
+	my %my_arg = $validator->( @args );
 
-    _croak( 'Invalid year given to new constructor' )
-	if not int($args{year});
-    $self->{year} = $args{year};
-    $self->{leapyear} = __is_leap_year( $args{year} );
-    if ($args{holiday}) {
-	_croak( 'Invalid holiday given to new constructor' )
-	    if (int($args{holiday}) < 0) || (int($args{holiday}) > 6);
-	_croak( 'Overlithe is only valid on leap years' )
-	    if $args{holiday} == 4 && ! $self->{leapyear};
-	$self->{holiday} = $args{holiday};
-    } elsif ($args{month}) {
-	_croak( 'Invalid month given to new constructor' )
-	  if (int($args{month}) < 1) || (int($args{month}) > 12);
-	_croak( 'Invalid day given to new constructor' )
-	  if defined( $args{day} ) && ( $args{day} < 1 || $args{day} > 30 );
-	$self->{month} = $args{month};
-	$self->{day} = $args{day} || 1;
-    } else {
-	# Interpret month => 0, day => number as holiday => number
-	$self->{holiday} = $self->{day} || 1;
-	$self->{month} = $self->{day} = 0;
+	_check_date( \%my_arg );
+
+	return $class->_new( %my_arg );
     }
-
-    foreach my $arg (qw(hour minute second nanosecond time_zone locale)) { # for DateTime compatibility
-	$dt_args{$arg} = $args{$arg} if defined $args{$arg};
-    }
-    $self->{recalc} = 1; # for weekday
-
-    bless $self, $class;
-    $self->_recalc_DateTime(%dt_args);
-
-    return $self;
-} # end sub new
-
-sub from_epoch {
-    my ($class, %args) = @_;
-    my $self;
-
-    $self->{dt} = DateTime->from_epoch(%args);
-    $self->{recalc} = 1;
-
-    return bless $self, $class;
 }
 
-sub now {
-    my ($class, %args) = @_;
-    my $self;
+# For internal use only - no validation.
+sub _new {
+    my ( $class, %my_arg ) = @_;
 
-    $self->{dt} = DateTime->now(%args);
-    $self->{recalc} = 1;
+	if ( $my_arg{month} ) {
+	    $my_arg{month} = __month_name_to_number( $my_arg{month} );
+	    $my_arg{day} ||= 1;
+	    $my_arg{holiday} = 0;
+	} else {
+	    $my_arg{holiday} ||= $my_arg{day} || 1;
+	    $my_arg{holiday} = __holiday_name_to_number(
+		$my_arg{holiday} );
+	    $my_arg{month} = $my_arg{day} = 0;
+	}
+	$my_arg{leapyear} = __is_leap_year( $my_arg{year} );
+	$my_arg{wday} = __day_of_week(
+	    $my_arg{month},
+	    $my_arg{day} || $my_arg{holiday},
+	);
 
-    return bless $self, $class;
-} # end sub now
+	my %dt_arg;
+	foreach my $key ( @delegate_to_dt ) {
+	    defined $my_arg{$key}
+		and $dt_arg{$key} = delete $my_arg{$key};
+	}
 
-sub today {
-    my ($class, %args) = @_;
-    my $self;
+	my $self = bless \%my_arg, $class;
 
-    $self->{dt} = DateTime->today(%args);
-    $self->{recalc} = 1;
+	$self->_recalc_DateTime(%dt_arg);
 
-    return bless $self, $class;
-} # end sub today
+	return $self;
+}
 
-sub from_object {
-    my ($class, %args) = @_;
-    my $self;
+foreach my $method ( qw{ from_epoch now today from_object } ) {
+    no strict qw{ refs };
+    *$method = sub {
+	my ( $class, @arg ) = @_;
 
-    $self->{dt} = DateTime->from_object(%args);
-    $self->{recalc} = 1;
-
-    return bless $self, $class;
-} # end sub from_object
+	return bless {
+	    dt		=> DateTime->$method( @arg ),
+	    recalc	=> 1,
+	}, $class;
+    }
+}
 
 sub last_day_of_month {
-    my ($class, %args) = @_;
-    $args{day} = 30; # The shire calendar is nice this way
-    return $class->new(%args);
-} # end sub last_day_of_month
+    my ( $class, %arg ) = @_;
+    $arg{day} = 30; # The shire calendar is nice this way
+    return $class->new( %arg );
+}
 
-sub from_day_of_year {
-    my ($class, %args) = @_;
+{
+    my $validator = Params::ValidationCompiler::validation_for(
+	name			=> '_validation_for_from_day_of_year',
+	name_is_optional	=> 1,
+	params			=> {
+	    year		=> {
+		type		=> t( 'Year' ),
+	    },
+	    day_of_year		=> {
+		type		=> t( 'DayOfYear' ),
+	    },
+	    hour		=> {
+		type		=> t( 'Hour' ),
+		default		=> 0,
+	    },
+	    minute		=> {
+		type		=> t( 'Minute' ),
+		default		=> 0,
+	    },
+	    second		=> {
+		type		=> t( 'Second' ),
+		default		=> 0,
+	    },
+	    nanosecond		=> {
+		type		=> t( 'Nanosecond' ),
+		default		=> 0,
+	    },
+	    time_zone		=> {
+		type		=> t( 'TimeZone' ),
+		optional	=> 1,
+	    },
+	    locale		=> {
+		type		=> t( 'Locale' ),
+		optional	=> 1,
+	    },
+	    formatter		=> {
+		type		=> t( 'Formatter' ),
+		optional	=> 1,
+	    },
+	},
+    );
 
-    _croak( 'No year given to from_day_of_year constructor' )
-	if not $args{year};
+    sub from_day_of_year {
+	my ( $class, @args ) = @_;
 
-    ( $args{month}, $args{day} ) = __day_of_year_to_date( $args{year},
-	delete $args{day_of_year} );
+	my %arg = $validator->( @args );
 
-    return $class->new(%args);
-} # end sub from_day_of_year
+	( $arg{month}, $arg{day} ) = __day_of_year_to_date(
+	    $arg{year},
+	    delete $arg{day_of_year},
+	);
+
+	return $class->_new( %arg );
+    }
+}
 
 sub calendar_name {
     return 'Shire';
@@ -293,88 +364,221 @@ sub week_number {
     return int(($yday - 1) / 7) + 1;
 }
 
-# sub epoch; sub hires_epoch; sub utc_rd_values; sub utc_rd_as_seconds;
-foreach my $method ( qw{
-    epoch hires_epoch utc_rd_values utc_rd_as_seconds
-} ) {
-    no strict qw{ refs };
-    *$method = sub { $_[0]->{dt}->$method() };
+sub quarter {
+    my ( $self ) = @_;
+    my $week_number = $self->week_number()
+	or return 0;
+    return POSIX::floor( ( $week_number - 1 ) / 7 ) + 1;
 }
 
 # Set methods
 
-sub set {
-    my ($self, %args) = @_;
-    my %dt_args;
-    $self->_recalc_Shire if $self->{recalc};
+{
+    my $validator = Params::ValidationCompiler::validation_for(
+	name			=> '_validation_for_set',
+	name_is_optional	=> 1,
+	params			=> {
+	    year		=> {
+		type		=> t( 'Year' ),
+		optional	=> 1,
+	    },
+	    month		=> {
+		type		=> t( 'Month' ),
+		optional	=> 1,
+	    },
+	    day			=> {
+		type		=> t( 'DayOfMonth' ),
+		optional	=> 1,
+	    },
+	    holiday		=> {
+		type		=> t( 'Holiday' ),
+		optional	=> 1,
+	    },
+	    hour		=> {
+		type		=> t( 'Hour' ),
+		optional	=> 1,
+	    },
+	    minute		=> {
+		type		=> t( 'Minute' ),
+		optional	=> 1,
+	    },
+	    second		=> {
+		type		=> t( 'Second' ),
+		optional	=> 1,
+	    },
+	    nanosecond		=> {
+		type		=> t( 'Nanosecond' ),
+		optional	=> 1,
+	    },
+	    locale		=> {
+		type		=> t( 'Locale' ),
+		optional	=> 1,
+	    },
+	},
+    );
 
-    $args{month}
-	and $args{month} = __month_name_to_number( $args{month} );
+    sub set {
+	my ( $self, @args ) = @_;
 
-    $args{holiday}
-	and $args{holiday} = __holiday_name_to_number( $args{holiday} );
+	my %my_arg = $validator->( @args );
 
-    $self->{year} = $args{year} || $self->{year};
-    $self->{leapyear} = __is_leap_year( $self->{year} );
+	_check_date( \%my_arg );
 
-    if ($self->{holiday}) {
-	if ($args{holiday}) {
-	    $self->{holiday} = $args{holiday};
-	} else {
+	$self->_recalc_Shire if $self->{recalc};
+
+	$my_arg{day}
+	    and not $my_arg{month}
+	    and not $self->{month}
+	    and _croak( 'Need to set month as well as day' );
+
+	if ( $my_arg{month} ) {
+	    $my_arg{day} ||= 1;
+	    $self->{month} = __month_name_to_number( $my_arg{month} );
 	    $self->{holiday} = 0;
-	    $self->{month} = $args{month} || 1;
-	    $self->{day} = $args{day} || 1;
 	}
-    } else {
-	if ($args{holiday}) {
-	    $self->{holiday} = $args{holiday};
-	    $self->{month} = 0;
-	    $self->{day} = 0;
-	} else {
-	    $self->{month} = $args{month} || $self->{month};
-	    $self->{day} = $args{day} || $self->{day};
+
+	if ( $my_arg{holiday} ) {
+	    $self->{holiday} = __holiday_name_to_number( $my_arg{holiday} );
+	    $self->{day} = $self->{month} = 0;
 	}
+
+	if ( $my_arg{day} ) {
+	    $self->{day} = $my_arg{day};
+	    $self->{holiday} = 0;
+	}
+
+	defined $my_arg{year}
+	    and $self->{year} = $my_arg{year};
+
+	$self->{leapyear} = __is_leap_year( $self->{year} );
+	$self->{wday} = __day_of_week(
+	    $self->{month},
+	    $self->{day} || $self->{holiday},
+	);
+
+	my %dt_args;
+	foreach my $arg ( @delegate_to_dt ) {
+	    $dt_args{$arg} = $my_arg{$arg} if defined $my_arg{$arg};
+	}
+
+	$self->_recalc_DateTime( %dt_args );
+
+	return $self;
     }
-
-    if ($self->{holiday}) {
-	_croak( 'Invalid holiday given to set method' )
-	    if (int($self->{holiday}) < 0) || (int($self->{holiday}) > 6);
-	_croak( 'Overlithe is only valid on a leap year' )
-	    if $self->{holiday} == 4 and not $self->{leapyear};
-    } else {
-	_croak( 'Invalid month given to set method' )
-	    if (int($self->{month}) < 1) || (int($self->{month}) > 12);
-        _croak( 'Invalid day given to set method' )
-	    if (int($self->{day}) < 1) || (int($self->{day}) > 30);
-    }
-
-    foreach my $arg (qw(hour minute second nanosecond locale)) {
-	$dt_args{$arg} = $args{$arg} if defined $args{$arg};
-    }
-
-    $self->_recalc_DateTime(%dt_args);
-    $self->{recalc} = 1; # for the weekday
-
-    return $self;
 }
 
-sub truncate : method {		## no critic (ProhibitBuiltInHomonyms)
-    my ($self, %args) = @_;
-    $self->_recalc_Shire if $self->{recalc};
+{
+    my @midnight = (
+	hour	=> 0,
+	minute	=> 0,
+	second	=> 0,
+	nanosecond	=> 0,
+    );
 
-    if ($args{to} eq 'year') {
-	$self->set( year => $self->{year}, holiday => 1, hour => 0, minute => 0, second => 0, nanosecond => 0);
-    } elsif ($args{to} eq 'month') {
-	if ($self->{holiday}) { # since holidays aren't in any month, this means we just lop off any time
-	    $self->{dt}->truncate(to => 'day');
+    my @quarter_start = (
+	undef,
+	[ holiday	=> 1 ],
+	[ month		=> 4,	day	=> 1 ],
+	[ holiday	=> 5 ],
+	[ month		=> 10,	day	=> 1 ],
+    );
+
+    my %handler = (
+	year	=> sub {
+	    $_[0]->set(
+		holiday	=> 1,
+		@midnight,
+	    );
+	},
+	quarter	=> sub {
+	    my ( $self ) = @_;
+	    # This is an extension to the Shire calendar by Tom Wyant.
+	    # It has no textual justification whatsoever. Feel free to
+	    # pretend it does not exist.
+	    if ( my $quarter = $self->quarter() ) {
+		# The start of a quarter is tricky since quarters 1 and
+		# 3 start on holidays, so we just do a table lookup.
+		$self->set(
+		    @{ $quarter_start[ $quarter ] },
+		    @midnight,
+		);
+	    } else {
+		# Since Midyear's day and the Overlithe are not part of
+		# any quarter, we just truncate them to the nearest day.
+		$self->{dt}->truncate( to => 'day' );
+	    }
+	},
+	month	=> sub {
+	    my ( $self ) = @_;
+	    if ( $self->{holiday} ) {
+		# since holidays aren't in any month, this means we just
+		# lop off any time
+		$self->{dt}->truncate( to => 'day' );
+	    } else {
+		$self->set(
+		    day		=> 1,
+		    @midnight,
+		);
+	    }
+	},
+	week	=> sub {
+	    my ( $self ) = @_;
+	    if ( $self->{wday} ) {
+		# TODO we do not, at this point in the coding, have date
+		# arithmetic. So we do it with rata die.
+		my ( $year, $day_of_year ) = __rata_die_to_year_day(
+		    ( $self->utc_rd_values() )[0] - $self->{wday} + 1 +
+		    GREGORIAN_RATA_DIE_TO_SHIRE
+		);
+		my ( $month, $day ) = __day_of_year_to_date(
+		    $year, $day_of_year );
+		my %set_arg = (
+		    year	=> $year,
+		    @midnight,
+		);
+		if ( $month ) {
+		    @set_arg{ qw{ month day } } = ( $month, $day );
+		} else {
+		    $set_arg{holiday} = $day;
+		}
+		$self->set( %set_arg );
+	    } else {
+		$self->{dt}->truncate( to => 'day' );
+	    }
+	},
+    );
+
+    # Weeks in the Shire start on Sterday, but that's what 'week' gives
+    # us.
+    $handler{local_week} = $handler{week};
+
+    my $validator = Params::ValidationCompiler::validation_for(
+	name			=> '_validation_for_truncate',
+	name_is_optional	=> 1,
+	params			=> {
+	    to			=> {
+		type		=> t( 'TruncationLevel' ),
+	    },
+	},
+    );
+
+    sub truncate : method {		## no critic (ProhibitBuiltInHomonyms)
+	my ( $self, @args ) = @_;
+
+	my %my_arg = $validator->( @args );
+
+	$self->_recalc_Shire if $self->{recalc};
+
+	if ( my $code = $handler{$my_arg{to}} ) {
+	    $code->( $self );
 	} else {
-	    $self->set( year => $self->{year}, month => $self->{month}, day => 1, hour => 0, minute => 0, second => 0, nanosecond => 0);
+	    # only time components will change, DateTime can handle it
+	    # fine on its own
+	    $self->{dt}->truncate( to => $my_arg{to} );
 	}
-    } else { # only time components will change, DateTime can handle it fine on its own
-	$self->{dt}->truncate(to => 'day');
-    }
 
-    return $self;
+	return $self;
+    }
 }
 
 sub set_time_zone {
@@ -397,6 +601,20 @@ use overload('<=>', \&_compare);
 use overload('cmp', \&_compare);
 use overload('""'  => \&_stringify);
 
+sub _check_date {
+    my ( $arg ) = @_;
+
+    if ( $arg->{holiday} ) {
+	$arg->{month}
+	    and _croak( 'May not specify both holiday and month' );
+	$arg->{day}
+	    and _croak( 'May not specify both holiday and day' );
+    }
+
+    return;
+}
+
+
 sub _compare { return $_[0]->{dt} <=> $_[1]->{dt}; }
 
 sub _stringify {
@@ -409,8 +627,15 @@ sub on_date {
     goto &strftime;
 }
 
+# sub hour; sub minute; sub second; sub nanosecond;
+# sub fractional_second; sub millisecond; sub microsecond;
+# sub time_zone; sub time_zone_long_name; sub time_zone_short_name
+# sub epoch; sub hires_epoch; sub utc_rd_values; sub utc_rd_as_seconds;
 foreach my $method ( qw{
+    hour minute second nanosecond
+    fractional_second millisecond microsecond
     time_zone time_zone_long_name time_zone_short_name
+    epoch hires_epoch utc_rd_values utc_rd_as_seconds
 } ) {
     no strict qw{ refs };
     *$method = sub {
@@ -901,10 +1126,24 @@ object is converted to another calendar which supports time.
 
     $dts->truncate( to => 'day' );
 
-Same as in DateTime. If the date is a holiday, truncation to C<'month'>
-is equivalent to truncation to C<'day'>, and similar for holidays that
-are not part of any week. Otherwise, this functions as specified in the
-DateTime object.
+Like the corresponding L<DateTime|DateTime> method, with the following
+exceptions:
+
+If the date is a holiday, truncation to C<'month'> is equivalent to
+truncation to C<'day'>, since holidays are not part of any month.
+
+Similarly, if the date is Midyear's day or the Overlithe, truncation to
+C<'week'>, C<'local_week'>, or C<'quarter'> is equivalent to truncation
+to C<'day'>, since these holidays are not part of any week (or, by
+extension, quarter).
+
+The week in the Shire calendar begins on Sterday, so both C<'week'> and
+C<'local_week'> truncate to that day.
+
+There is no textual justification for quarters, but they are in the
+L<DateTime|DateTime> interface, so I rationalized the concept the same
+way the Shire calendar rationalizes weeks. If you are not interested in
+non-canonical functionality, please ignore anything involving quarters.
 
 =head3 set_time_zone
 
