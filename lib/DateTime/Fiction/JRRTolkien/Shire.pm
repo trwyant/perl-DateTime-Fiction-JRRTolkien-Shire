@@ -6,171 +6,73 @@ use strict;
 use warnings;
 
 use Carp ();
+use Date::Tolkien::Shire::Data qw{
+    __date_to_day_of_year
+    __day_of_week
+    __day_of_year_to_date
+    __format
+    __holiday_name
+    __holiday_name_to_number
+    __is_leap_year
+    __month_name
+    __month_name_to_number
+    __rata_die_to_year_day
+    __trad_weekday_name
+    __weekday_name
+    __year_day_to_rata_die
+    GREGORIAN_RATA_DIE_TO_SHIRE
+};
 use DateTime 0.14;
 
 our $VERSION = '0.22';
 
 use constant DAY_NUMBER_MIDYEARS_DAY	=> 183;
 
-my @holiday_names = ( '', '2 Yule', '1 Lithe', "Midyear's day",
-    'Overlithe', '2 Lithe', '1 Yule' );
-my @month_names = ( '', 'Afteryule', 'Solmath', 'Rethe', 'Astron',
-    'Thrimidge', 'Forelithe', 'Afterlithe', 'Wedmath', 'Halimath',
-    'Winterfilth', 'Blotmath', 'Foreyule' );
-
 # This assumes all the values in the info hashref are valid, and doesn't
 # do validation However, the day and month parameters will be given
 # defaults if not present
 sub _recalc_DateTime {
     my ($self, %dt_args) = @_;
-    my ($prevleap, $gregleap, $modyear, $yday);
-    my @monthlen = (0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31);
 
-    $dt_args{year} = $self->{year} - 5464;
-    # $prevleap refers to shire calendar
-    $prevleap = 0;
-    $prevleap = 1 if ((($self->{year} - 1) % 4 == 0) and (($self->{year} - 1) % 100 != 0));
-    $prevleap = 1 if (($self->{year} - 1) % 400 == 0);
+    my $shire_rd = __year_day_to_rata_die(
+	$self->{year},
+	__date_to_day_of_year(
+	    $self->{year},
+	    $self->{month},
+	    $self->{day} || $self->{holiday},
+	),
+    );
 
-    if ($self->{holiday}) {
-	if ($self->{leapyear}) {
-	    $yday = (0, 1, 182, DAY_NUMBER_MIDYEARS_DAY, 184, 185, 366)[$self->{holiday}];
-	} else {
-	    $yday = (0, 1, 182, DAY_NUMBER_MIDYEARS_DAY, 0, 184, 365)[$self->{holiday}];
-	}
-    } else {
-	$yday = ($self->{month} - 1) * 30 + $self->{day} + 1; # The +1 is for 2 Yule
-	$yday += 3 if $yday > 181; #Account for the Lithe and Midyear day
-	++$yday if $self->{leapyear} and $yday > DAY_NUMBER_MIDYEARS_DAY; #Account for Overlithe
-    }
-    $yday -= 9; # Different Start of years.  We'll adjust this based on the year momentarily
+    ( $dt_args{year}, $dt_args{day_of_year} ) = __rata_die_to_year_day(
+	$shire_rd - GREGORIAN_RATA_DIE_TO_SHIRE );
 
-    #Now for adjustments for various years being off by a day
-    $modyear = $self->{year} % 400;
-    if (($modyear > 300) && ($modyear < 364)) {
-	--$yday;
-    } elsif ($modyear == 364) {
-	--$yday;
-    } elsif ((($modyear > 64) && ($modyear < 100)) || (($modyear > 164) && ($modyear < 200))) {
-	++$yday;
-    } elsif (($modyear == 100) || ($modyear == 200)) {
-	++$yday;
-    }
-
-    if ($yday < 1) {
-	--$dt_args{year};
-	$gregleap = 0;
-	$gregleap = 1 if (($dt_args{year} % 4 == 0) and ($dt_args{year} % 100 != 0));
-	$gregleap = 1 if ($dt_args{year} % 400 == 0);
-	if ($gregleap) {
-	    $yday += 366;
-	} else {
-	    $yday += 365;
-	}
-    } else {
-	$gregleap = 0;
-	$gregleap = 1 if (($dt_args{year} % 4 == 0) and ($dt_args{year} % 100 != 0));
-	$gregleap = 1 if ($dt_args{year} % 400 == 0);
-	if ($gregleap and $yday > 366) {
-	    ++$dt_args{year};
-	    $yday -= 366;
-	    $gregleap = 0;
-	} elsif ($yday > 365) {
-	    ++$dt_args{year};
-	    $yday -= 365;
-	    $gregleap = 0;
-	    $gregleap = 1 if (($dt_args{year} % 4 == 0) and ($dt_args{year} % 100 != 0));
-	    $gregleap = 1 if ($dt_args{year} % 400 == 0);
-	}
-    }
-
-    #now convert the year-day to the month and month-day
-    $monthlen[2] = 29 if $gregleap;
-    $dt_args{month} = 1;
-    while ($yday > $monthlen[$dt_args{month}] and $dt_args{month} < 12) {
-	$yday -= $monthlen[$dt_args{month}];
-	++$dt_args{month};
-    }
-    $dt_args{day} = $yday;
-
-    # Now for time parameters, if any
-    if ($self->{dt}) {
-	foreach my $arg (qw(hour minute second nanosecond time_zone locale)) {
-	    $dt_args{$arg} = $self->{dt}->$arg if not defined $dt_args{$arg};
-	}
-    }
-
-    $self->{dt} = DateTime->new( %dt_args );
+    $self->{dt} = DateTime->from_day_of_year( %dt_args );
 
     return;
 }
 
 sub _recalc_Shire {
-    my $self = shift;
-    my ($yday, $modyear);
+    my ( $self ) = @_;
 
-    $self->{year} = $self->{dt}->year + 5464;
-    $self->{holiday} = 0; #assume this unless we find otherwise
-    $yday = $self->{dt}->day_of_year + 9; # + 9 to account fora different year starting points
+    my $greg_rd = ( $self->utc_rd_values() )[0];
 
-    # year adjustments are needed since "except every 100 except every
-    # 400 year rule applies to different years in the two calendars"
-    $modyear = $self->{year} % 400;
-    if (($modyear > 300) && ($modyear < 364)) {
-	++$yday;
-    } elsif ($modyear == 364) {
-	++$yday;
-    } elsif ((($modyear > 64) && ($modyear < 100)) || (($modyear > 164) && ($modyear < 200))) {
-	--$yday;
-    } elsif (($modyear == 100) || ($modyear == 200)) {
-	--$yday;
-    }
-    $self->{leapyear} = 0;
-    $self->{leapyear} = 1 if ($self->{year} % 4 == 0) and ($self->{year} % 100 != 0);
-    $self->{leapyear} = 1 if $self->{year} % 400 == 0;
-    if ($self->{leapyear} and $yday > 366) {
-	++$self->{year};
-	$yday -= 366;
-	$self->{leapyear} = 0;
-    } elsif (! $self->{leapyear} && $yday > 365) {
-	++$self->{year};
-	$yday -= 365;
-	$self->{leapyear} = 0;
-	$self->{leapyear} = 1 if ($self->{year} % 4 == 0) and ($self->{year} % 100 != 0);
-	$self->{leapyear} = 1 if $self->{year} % 400 == 0;
-    }
+    # Because the leap year algorithm is the same in both calendars, I
+    # can use __rata_die_to_year_day() on the Gregorian Rata Die day.
+    my ( $year, $day_of_year ) = __rata_die_to_year_day(
+	$greg_rd + GREGORIAN_RATA_DIE_TO_SHIRE );
 
-    # The overlithe only occurs on a leapyear.  By checking for it
-    # first, we can ignore leap years after this point
-    if ($self->{leapyear}) {
-	$self->{holiday} = 4 if ($yday == 184); #Overlithe
-	--$yday if $yday > 184;
-    }
-    unless ($self->{holiday}) { # this will only be true if its the Overlithe
-	if ($yday == 1) {$self->{holiday} = 1;} #2 Yule-first day of new year
-	elsif ($yday == 182) {$self->{holiday} = 2;} #1 Lithe
-	elsif ($yday == DAY_NUMBER_MIDYEARS_DAY) {$self->{holiday} = 3;} #Midyear's day
-	elsif ($yday == 184) {$self->{holiday} = 5;} #2 Lithe
-	elsif ($yday == 365) {$self->{holiday} = 6;} #1 Yule
-    }
+    my ( $month, $day ) = __day_of_year_to_date( $year, $day_of_year );
 
-    # Midyear's day (and Overlithe when applicable) are not in any week, while every other day is
-    # Therefore, subtract out midyear's day to make the calculations nice
-    --$yday if $yday > DAY_NUMBER_MIDYEARS_DAY;
-    if ($self->{holiday} == 3 or $self->{holiday} == 4) {
-	$self->{wday} = 0;
+    $self->{year} = $year;
+    $self->{leapyear} = __is_leap_year( $year );
+    $self->{wday} = __day_of_week( $month, $day );
+    if ( $month ) {
+	$self->{month} = $month;
+	$self->{day} = $day;
+	$self->{holiday} = 0;
     } else {
-	$self->{wday} = (($yday - 1) % 7) + 1;
-    }
-
-    if ($self->{holiday}) { # holidays are not part of any month
-	$self->{month} = 0;
-	$self->{day} = 0;
-    } else {
-	--$yday; #ignore 2 Yule
-	$yday -= 2 if $yday > 180; #ignore the Lithes (correct plural???) -- Midyear's day already subtracted out
-	$self->{day} = (($yday - 1) % 30) + 1;
-	$self->{month} = int(($yday - 1) / 30) + 1;
+	$self->{holiday} = $day;
+	$self->{month} = $self->{day} = 0;
     }
 
     $self->{recalc} = 0;
@@ -184,23 +86,16 @@ sub new {
     my ($class, %args) = @_;
     my ($self, %dt_args );
 
-    if ($args{month}) {
-	foreach my $itr (1..12) {
-	    $args{month} = $itr if $args{month} eq $month_names[$itr];
-	}
-    }
-    if ($args{holiday}) {
-	foreach my $itr (1..6) {
-	    $args{holiday} = $itr if $args{holiday} eq $holiday_names[$itr];
-	}
-    }
+    $args{month}
+	and $args{month} = __month_name_to_number( $args{month} );
+
+    $args{holiday}
+	and $args{holiday} = __holiday_name_to_number( $args{holiday} );
 
     _croak( 'Invalid year given to new constructor' )
 	if not int($args{year});
     $self->{year} = $args{year};
-    $self->{leapyear} = 0;
-    $self->{leapyear} = 1 if $self->{year} % 4 == 0 && $self->{year} % 100 != 0;
-    $self->{leapyear} = 1 if $self->{year} % 400 == 0;
+    $self->{leapyear} = __is_leap_year( $args{year} );
     if ($args{holiday}) {
 	_croak( 'Invalid holiday given to new constructor' )
 	    if (int($args{holiday}) < 0) || (int($args{holiday}) > 6);
@@ -215,7 +110,9 @@ sub new {
 	$self->{month} = $args{month};
 	$self->{day} = $args{day} || 1;
     } else {
-	$self->{holiday} = 1;
+	# Interpret month => 0, day => number as holiday => number
+	$self->{holiday} = $self->{day} || 1;
+	$self->{month} = $self->{day} = 0;
     }
 
     foreach my $arg (qw(hour minute second nanosecond time_zone locale)) { # for DateTime compatibility
@@ -277,56 +174,12 @@ sub last_day_of_month {
 
 sub from_day_of_year {
     my ($class, %args) = @_;
-    my $leap;
-
-    my $doy = $args{day_of_year};
-    delete $args{day_of_year};
 
     _croak( 'No year given to from_day_of_year constructor' )
 	if not $args{year};
-    $leap = 1 if $args{year} % 4 == 0 and $args{year} % 100 != 0;
-    $leap = 1 if $args{year} % 400 == 0;
-    if ($leap) {
-	_croak( 'Invalid day given to from_day_of_year constructor' )
-	    if $doy > 366 or $doy < 1;
-	if ($doy == 1) {
-	    $args{holiday} = 1;
-	} elsif ($doy == 182) {
-	    $args{holiday} = 2;
-	} elsif ($doy == DAY_NUMBER_MIDYEARS_DAY ) {
-	    $args{holiday} = 3;
-	} elsif ($doy == 184) {
-	    $args{holiday} = 4;
-	} elsif ($doy == 185) {
-	    $args{holiday} = 5;
-	} elsif ($doy == 366) {
-	    $args{holiday} = 6;
-	} else {
-	    $doy -= 4 if $doy > 185; # Lithe's, midyear's day, and Overlithe
-	    --$doy; # 2 Yule
-	    $args{month} = int(($doy - 1) / 30) + 1;
-	    $args{day} = (($doy - 1) % 30) + 1;
-	}
-    } else {
-	_croak( 'Invalid day given to from_day_of_year constructor' )
-	    if $doy > 365 or $doy < 1;
-	if ($doy == 1) {
-	    $args{holiday} = 1;
-	} elsif ($doy == 182) {
-	    $args{holiday} = 2;
-	} elsif ($doy == DAY_NUMBER_MIDYEARS_DAY ) {
-	    $args{holiday} = 3;
-	} elsif ($doy == 184) {
-	    $args{holiday} = 5;
-	} elsif ($doy == 365) {
-	    $args{holiday} = 6;
-	} else {
-	    $doy -= 3 if $doy > 184; # Lithe's and midyear's day
-	    --$doy; # 2 Yule
-	    $args{month} = int(($doy - 1) / 30) + 1;
-	    $args{day} = (($doy - 1) % 30) + 1;
-	}
-    }
+
+    ( $args{month}, $args{day} ) = __day_of_year_to_date( $args{year},
+	delete $args{day_of_year} );
 
     return $class->new(%args);
 } # end sub from_day_of_year
@@ -352,7 +205,7 @@ sub month {
 
 sub month_name {
     my $self = shift;
-    return $month_names[$self->month];
+    return __month_name( $self->month() );
 } #end sub month_name
 
 sub day_of_month {
@@ -373,66 +226,44 @@ sub day_of_week {
 *wday  = \&day_of_week;	# sub wday
 *dow  = \&day_of_week;	# sub dow
 
-{
-    my @days = ( '', 'Sterday', 'Sunday', 'Monday', 'Trewsday',
-	'Hevensday', 'Mersday', 'Highday' );
-
-    sub day_name {
-	my $self = shift;
-	return $days[$self->day_of_week];
-    }
+sub day_name {
+    my ( $self ) = @_;
+    return __weekday_name( $self->day_of_week() );
 }
 
-{
-    my @days = ( '', 'Sterrendei', 'Sunnendei', 'Monendei',
-	'Trewesdei', 'Hevenesdei', 'Meresdei', 'Highdei' );
-
-    sub day_name_trad {
-	my $self = shift;
-	return $days[$self->day_of_week];
-    }
+sub day_name_trad {
+    my ( $self ) = @_;
+    return __trad_weekday_name( $self->day_of_week() );
 }
 
 sub holiday {
-    my $self = shift;
+    my ( $self ) = @_;
     $self->_recalc_Shire if $self->{recalc};
     return $self->{holiday};
-} # end sub holiday
+}
 
 sub holiday_name {
-    my $self = shift;
-    return $holiday_names[$self->holiday];
-} # end sub holiday_name
+    my ( $self ) = @_;
+    return __holiday_name( $self->holiday() );
+}
 
 sub is_leap_year {
     my $self = shift;
     $self->_recalc_Shire if $self->{recalc};
     return $self->{leapyear};
-} # end is_leap_year
+}
 
 sub day_of_year {
-    my $self = shift;
-    my $yday;
+    my ( $self ) = @_;
+
     $self->_recalc_Shire if $self->{recalc};
 
-    if ($self->{month}) { # holidays aren't part of any month
-	$yday = 30 * ($self->{month} - 1) + $self->{day} + 1;  # + 1 is for the 2 Yule
-	if ($self->{month} > 6) {
-	    $yday += 3;
-	    ++$yday if $self->{leapyear};
-	}
-    } else {
-	if ($self->{leapyear}) {
-	    $yday = ( 0, 1, 182, DAY_NUMBER_MIDYEARS_DAY, 184, 185,
-		366 )[$self->{holiday}];
-	} else {
-	    $yday = ( 0, 1, 182, DAY_NUMBER_MIDYEARS_DAY, 0, 184,
-		365 )[$self->{holiday}];
-	}
-    }
-
-    return $yday;
-} # end sub day_of_year
+    return __date_to_day_of_year(
+	$self->{year},
+	$self->{month},
+	$self->{day} || $self->{holiday},
+    );
+}
 
 *doy  = \&day_of_year;	# sub doy
 
@@ -477,21 +308,15 @@ sub set {
     my %dt_args;
     $self->_recalc_Shire if $self->{recalc};
 
-    if ($args{month}) {
-	foreach my $itr (1..12) {
-	    $args{month} = $itr if $args{month} eq $month_names[$itr];
-	}
-    }
-    if ($args{holiday}) {
-	foreach my $itr (1..6) {
-	    $args{holiday} = $itr if $args{holiday} eq $holiday_names[$itr];
-	}
-    }
+    $args{month}
+	and $args{month} = __month_name_to_number( $args{month} );
+
+    $args{holiday}
+	and $args{holiday} = __holiday_name_to_number( $args{holiday} );
 
     $self->{year} = $args{year} || $self->{year};
-    $self->{leapyear} = 0;
-    $self->{leapyear} = 1 if $self->{year} % 4 == 0 and $self->{year} % 100 != 0;
-    $self->{leapyear} = 1 if $self->{year} % 400 == 0;
+    $self->{leapyear} = __is_leap_year( $self->{year} );
+
     if ($self->{holiday}) {
 	if ($args{holiday}) {
 	    $self->{holiday} = $args{holiday};
@@ -559,6 +384,14 @@ sub set_time_zone {
     return $self;
 }
 
+sub strftime {
+    my ( $self, @fmt ) = @_;
+
+    return wantarray ?
+	( map { __format( $self, $_ ) } @fmt ) :
+	__format( $self, $fmt[0] );
+}
+
 # Comparison overloads come with DateTime.  Stringify will be our own
 use overload('<=>', \&_compare);
 use overload('cmp', \&_compare);
@@ -567,202 +400,13 @@ use overload('""'  => \&_stringify);
 sub _compare { return $_[0]->{dt} <=> $_[1]->{dt}; }
 
 sub _stringify {
-    my $self = shift;
-    my $returntext;
-    $self->_recalc_Shire if $self->{recalc};
-
-    if ($self->{holiday}) {
-	if ($self->{wday}) {
-	    $returntext = $self->day_name . " " . $self->holiday_name . " " . $self->{year};
-	} else {
-	    $returntext = $self->holiday_name . " " . $self->{year};
-	}
-    } else {
-	$returntext = $self->day_name . " " . $self->{day} . " " . $self->month_name  . " " . $self->{year};
-    }
-
-    return $returntext;
+    splice @_, 1, $#_, '%Ex';
+    goto &strftime;
 }
 
-{
-    # %events has the following structure.  It is a hash of hashes.  The
-    # top level hash is keyed by the numbers 0 - 12.  1-12 refer to the
-    # months and zero is reserved to holidays.  The second level hash is
-    # keyed by the date 1-30 within the month, or 1-6 for the six
-    # holidays.  The values of the level 2 hashes are the events we want
-    # to return if the day matches up
-
-    my %events;
-
-    $events{0} = { 3  => "Wedding of King Elessar and Arwen, 1419.\n"
-		   };
-
-    $events{1} = { 8  => "The Company of the Ring reaches Hollin, 1419.\n",
-		   13 => "The Company of the Ring reaches the West-gate of Moria at nightfall, 1419.\n",
-		   14 => "The Company of the Ring spends the night in Moria hall 21, 1419.\n",
-		   15 => "The Bridge of Khazad-dum, and the fall of Gandalf, 1419.\n",
-		   17 => "The Company of the Ring comes to Caras Galadhon at evening, 1419.\n",
-		   23 => "Gandalf pursues the Balrog to the peak of Zirakzigil, 1419.\n",
-		   25 => "Gandalf casts down the Balrog, and passes away.\n" .
-		       "His body lies on the peak of Zirakzigil, 1419.\n"
-		   };
-
-    $events{2} = { 14 => "Frodo and Sam look in the Mirror of Galadriel, 1419.\n" .
-		       "Gandalf returns to life, and lies in a trance, 1419.\n",
-		   16 => "Company of the Ring says farewell to Lorien --\n" .
-		       "Gollum observes departure, 1419.\n",
-		   17 => "Gwaihir the eagle bears Gandalf to Lorien, 1419.\n",
-		   25 => "The Company of the Ring pass the Argonath and camp at Parth Galen, 1419.\n" .
-		       "First battle of the Fords of Isen -- Theodred son of Theoden slain, 1419.\n",
-		   26 => "Breaking of the Fellowship, 1419.\n" .
-		       "Death of Boromir; his horn is heard in Minas Tirith, 1419.\n" .
-		       "Meriadoc and Peregrin captured by Orcs -- Aragorn pursues, 1419.\n" .
-		       "Eomer hears of the descent of the Orc-band from Emyn Muil, 1419.\n" .
-		       "Frodo and Samwise enter the eastern Emyn Muil, 1419.\n",
-		   27 => "Aragorn reaches the west-cliff at sunrise, 1419.\n" .
-		       "Eomer sets out from Eastfold against Theoden's orders to pursue the Orcs, 1419.\n",
-		   28 => "Eomer overtakes the Orcs just outside of Fangorn Forest, 1419.\n",
-		   29 => "Meriodoc and Pippin escape and meet Treebeard, 1419.\n" .
-		       "The Rohirrim attack at sunrise and destroy the Orcs, 1419.\n" .
-		       "Frodo descends from the Emyn Muil and meets Gollum, 1419.\n" .
-		       "Faramir sees the funeral boat of Boromir, 1419.\n",
-		   30 => "Entmoot begins, 1419.\n" .
-		       "Eomer, returning to Edoras, meets Aragorn, 1419.\n"
-		   };
-
-    $events{3} = { 1  => "Aragorn meets Gandalf the White, and they set out for Edoras, 1419.\n" .
-		       "Faramir leaves Minas Tirith on an errand to Ithilien, 1419.\n",
-		   2  => "The Rohirrim ride west against Saruman, 1419.\n" .
-		       "Second battle at the Fords of Isen; Erkenbrand defeated, 1419.\n" .
-		       "Entmoot ends.  Ents march on Isengard and reach it at night, 1419.\n",
-		   3  => "Theoden retreats to Helm's Deep; battle of the Hornburg begins, 1419.\n" .
-		       "Ents complete the destruction of Isengard.\n",
-		   4  => "Theoden and Gandalf set out from Helm's Deep for Isengard, 1419.\n" .
-		       "Frodo reaches the slag mound on the edge of the of the Morannon, 1419.\n",
-		   5  => "Theoden reaches Isengard at noon; parley with Saruman in Orthanc, 1419.\n" .
-		       "Gandalf sets out with Peregrin for Minas Tirith, 1419.\n",
-		   6  => "Aragorn overtaken by the Dunedain in the early hours, 1419.\n",
-		   7  => "Frodo taken by Faramir to Henneth Annun, 1419.\n" .
-		       "Aragorn comes to Dunharrow at nightfall, 1419.\n",
-		   8  => "Aragorn takes the \"Paths of the Dead\", and reaches Erech at midnight, 1419.\n".
-		       "Frodo leaves Henneth Annun, 1419.\n",
-		   9  => "Gandalf reaches Minas Tirith, 1419.\n" .
-		       "Darkness begins to flow out of Mordor, 1419.\n",
-		   10 => "The Dawnless Day, 1419.\n" .
-		       "The Rohirrim are mustered and ride from Harrowdale, 1419.\n" .
-		       "Faramir rescued by Gandalf at the gates of Minas Tirith, 1419.\n" .
-		       "An army from the Morannon takes Cair Andros and passes into Anorien, 1419.\n",
-		   11 => "Gollum visits Shelob, 1419.\n" .
-		       "Denethor sends Faramir to Osgiliath, 1419.\n" .
-		       "Eastern Rohan is invaded and Lorien assaulted, 1419.\n",
-		   12 => "Gollum leads Frodo into Shelob's lair, 1419.\n" .
-		       "Ents defeat the invaders of Rohan, 1419.\n",
-		   13 => "Frodo captured by the Orcs of Cirith Ungol, 1419.\n" .
-		       "The Pelennor is overrun and Faramir is wounded, 1419.\n" .
-		       "Aragorn reaches Pelargir and captures the fleet of Umbar, 1419.\n",
-		   14 => "Samwise finds Frodo in the tower of Cirith Ungol, 1419.\n" .
-		       "Minas Tirith besieged, 1419.\n",
-		   15 => "Witch King breaks the gates of Minas Tirith, 1419.\n" .
-		       "Denethor, Steward of Gondor, burns himself on a pyre, 1419.\n" .
-		       "The battle of the Pelennor occurs as Theoden and Aragorn arrive, 1419.\n" .
-		       "Thranduil repels the forces of Dol Guldur in Mirkwood, 1419.\n" .
-		       "Lorien assaulted for second time, 1419.\n",
-		   17 => "Battle of Dale, where King Brand and King Dain Ironfoot fall, 1419.\n" .
-		       "Shagrat brings Frodo's cloak, mail-shirt, and sword to Barad-dur, 1419.\n",
-		   18 => "Host of the west leaves Minas Tirith, 1419.\n" .
-		       "Frodo and Sam overtaken by Orcs on the road from Durthang to Udun, 1419.\n",
-		   19 => "Frodo and Sam escape the Orcs and start on the road toward Mount Doom, 1419.\n",
-		   22 => "Lorien assaulted for the third time, 1419.\n",
-		   24 => "Frodo and Sam reach the base of Mount Doom, 1419.\n",
-		   25 => "Battle of the Host of the West on the slag hill of the Morannon, 1419.\n" .
-		       "Gollum siezes the Ring of Power and falls into the Cracks of Doom, 1419.\n" .
-		       "Downfall of Barad-dur and the passing of Sauron!, 1419.\n" .
-		       "Birth of Elanor the Fair, daughter of Samwise, 1421.\n" .
-		       "Fourth age begins in the reckoning of Gondor, 1421.\n",
-		   27 => "Bard II and Thorin III Stonehelm drive the enemy from Dale, 1419.\n",
-		   28 => "Celeborn crosses the Anduin and begins destruction of Dol Guldur, 1419.\n"
-		   };
-
-    $events{4} = { 6  => "The mallorn tree flowers in the party field, 1420.\n",
-	           8  => "Ring bearers are honored on the fields of Cormallen, 1419.\n",
-	           12 => "Gandalf arrives in Hobbiton, 1418\n"
-	           };
-
-    $events{5} = { 1  => "Crowning of King Elessar, 1419.\n" .
-		       "Samwise marries Rose, 1420.\n"
-		   };
-
-    $events{6} = { 20 => "Sauron attacks Osgiliath, 1418.\n" .
-		       "Thranduil is attacked, and Gollum escapes, 1418.\n"
-		   };
-
-    $events{7} = { 4  => "Boromir sets out from Minas Tirith, 1418\n",
-		   10 => "Gandalf imprisoned in Orthanc, 1418\n",
-		   19 => "Funeral Escort of King Theoden leaves Minas Tirith, 1419.\n"
-		   };
-
-    $events{8} = { 10 => "Funeral of King Theoden, 1419.\n"
-		   };
-
-    $events{9} = { 18 => "Gandalf escapes from Orthanc in the early hours, 1418.\n",
-		   19 => "Gandalf comes to Edoras as a beggar, and is refused admittance, 1418\n",
-		   20 => "Gandalf gains entrance to Edoras.  Theoden commands him to go:\n" .
-		       "\"Take any horse, only be gone ere tomorrow is old\", 1418.\n",
-		   21 => "The hobbits return to Rivendell, 1419.\n",
-		   22 => "Birthday of Bilbo and Frodo.\n" .
-		       "The Black Riders reach Sarn Ford at evening;\n" .
-		       "  they drive off the guard of Rangers, 1418.\n" .
-		       "Saruman comes to the Shire, 1419.\n",
-		   23 => "Four Black Riders enter the shire before dawn.  The others pursue \n" .
-		       "the Rangers eastward and then return to watch the Greenway, 1418.\n" .
-		       "A Black Rider comes to Hobbiton at nightfall, 1418.\n" .
-		       "Frodo leaves Bag End, 1418.\n" .
-		       "Gandalf having tamed Shadowfax rides from Rohan, 1418.\n",
-		   26 => "Frodo comes to Bombadil, 1418\n",
-		   28 => "The Hobbits are captured by a barrow-wight, 1418.\n",
-		   29 => "Frodo reaches Bree at night, 1418.\n" .
-		       "Frodo and Bilbo depart over the sea with the three Keepers, 1421.\n" .
-		       "End of the Third Age, 1421.\n",
-		   30 => "Crickhollow and the inn at Bree are raided in the early hours, 1418.\n" .
-		       "Frodo leaves Bree, 1418.\n",
-            	   };
-
-    $events{10} = { 3  => "Gandalf attacked at night on Weathertop, 1418.\n",
-		    5  => "Gandalf and the Hobbits leave Rivendell, 1419.\n",
-		    6  => "The camp under Weathertop is attacked at night and Frodo is wounded, 1418.\n",
-		    11 => "Glorfindel drives the Black Riders off the Bridge of Mitheithel, 1418.\n",
-		    13 => "Frodo crosses the Bridge of Mitheithel, 1418.\n",
-		    18 => "Glorfindel finds Frodo at dusk, 1418.\n" .
-			"Gandalf reaches Rivendell, 1418.\n",
-		    20 => "Escape across the Ford of Bruinen, 1418.\n",
-		    24 => "Frodo recovers and wakes, 1418.\n" .
-			"Boromir arrives at Rivendell at night, 1418.\n",
-		    25 => "Council of Elrond, 1418.\n",
-		    30 => "The four Hobbits arrive at the Brandywine Bridge in the dark, 1419.\n"
-		    };
-
-    $events{11} = { 3  => "Battle of Bywater and passing of Saruman, 1419.\n" .
-			"End of the War of the Ring, 1419.\n"
-		  };
-    $events{12} = { 25 => "The Company of the Ring leaves Rivendell at dusk, 1418.\n"
-		    };
-
-    sub on_date {
-	my $self = shift;
-	my $returntext;
-	$self->_recalc_Shire if $self->{recalc};
-
-
-	if ($self->{holiday} and defined($events{0}->{$self->{holiday}})) {
-	    $returntext .= "$self\n\n" . $events{0}->{$self->{holiday}};
-	} elsif (defined($events{$self->{month}}->{$self->{day}})) {
-	    $returntext .= "$self\n\n" . $events{$self->{month}}->{$self->{day}};
-	} else {
-	    $returntext = "$self\n";
-	}
-
-	return $returntext;
-    }
+sub on_date {
+    splice @_, 1, $#_, '%Ex%n%En%Ed';
+    goto &strftime;
 }
 
 foreach my $method ( qw{
@@ -1152,6 +796,82 @@ Try
 
     perl -MDateTime::Fiction::JRRTolkien::Shire
       -le 'print DateTime::Fiction::JRRTolkien::Shire->now->on_date;'
+
+=head2 strftime
+
+    print $dts->strftime( '%Ex%n' );
+
+This is a re-implementation imported from
+L<Date::Tolkien::Shire::Data|Date::Tolkien::Shire::Data>. It is intended
+to be reasonably compatible with the same-named L<DateTime|DateTime>
+method, but has some additions. Briefly:
+
+=over
+
+=item %EA
+
+The full traditional weekday name, or C<''> for holidays that are part
+of no week.
+
+=item %Ea
+
+The abbreviated traditional weekday name, or C<''> for holidays that are
+part of no week.
+
+=item %ED
+
+The L<__on_date_accented()|/__on_date_accented> text for the given date.
+
+You can get a leading C<"\n"> if there was an actual event using
+C<'%En%ED'>.
+
+=item %Ed
+
+The L<__on_date()|/__on_date> text for the given date.
+
+You can get a leading C<"\n"> if there was an actual event using
+C<'%En%Ed'>. So to mimic L<Date::Tolkien::Shire|Date::Tolkien::Shire>
+L<on_date()|Date::Tolkien::Shire/on_date>, use C<'%Ex%n%En%Ed'>.
+
+=item %EE
+
+The full holiday name, or C<''> for non-holidays.
+
+=item %Ee
+
+The abbreviated holiday name, or C<''> for non-holidays.
+
+=item %En
+
+Inserts nothing, but causes the next C<%Ed> or C<%ED> (and B<only> the
+next one) to have a C<"\n"> prefixed if there was an actual event on the
+date.
+
+=item %Ex
+
+Like C<'%c'>, but without the time of day, and with full names rather
+than abbreviations.
+
+=item %{{format||format||format}}
+
+The formatter chooses the first format for normal days (i.e. part of a
+month), the second for holidays that are part of a week (i.e. 2 Yule, 1
+Lithe, 2 Lithe and 1 Yule), or the third for holidays that are not part
+of a week (i.e. Midyear's day and the Overlithe). If the second or third
+formats are omitted, the preceding format is used. Trailing C<||>
+operators can also be omitted. If you need to specify more than one
+right curly bracket or vertical bar as part of a format, separate them
+with percent signs (i.e. C<'|%|%|'>.
+
+=back
+
+This method also supports certain Glibc extensions; specifically the
+formatting flags C<'-'>, C<'_'>, C<'0'> and C<'^'>, and user-specified
+field widths.
+
+See L<__format()|Date::Tolkien::Shire::Data/__format> in
+L<Date::Tolkien::Shire::Data|Date::Tolkien::Shire::Data> for full
+documentation, which takes precedence over anything said here.
 
 =head2 "Set" Methods
 
