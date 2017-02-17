@@ -23,8 +23,13 @@ use Date::Tolkien::Shire::Data qw{
     GREGORIAN_RATA_DIE_TO_SHIRE
 };
 use DateTime 0.14;
-use DateTime::Fiction::JRRTolkien::Shire::Types;
+use DateTime::Fiction::JRRTolkien::Shire::Types ();
 use Params::ValidationCompiler ();
+
+# This Conan The Barbarian-style import is because I am reluctant to use
+# any magic more subtle than I myself posess; to wit
+# namespace::autoclean.
+*__t = \&DateTime::Fiction::JRRTolkien::Shire::Types::t;
 
 our $VERSION = '0.22';
 
@@ -92,46 +97,46 @@ sub _recalc_Shire {
 	name_is_optional	=> 1,
 	params			=> {
 	    year		=> {
-		type		=> t( 'Year' ),
+		type		=> __t( 'Year' ),
 	    },
 	    month		=> {
-		type		=> t( 'Month' ),
+		type		=> __t( 'Month' ),
 		optional	=> 1,
 	    },
 	    day			=> {
-		type		=> t( 'DayOfMonth' ),
+		type		=> __t( 'DayOfMonth' ),
 		optional	=> 1,
 	    },
 	    holiday		=> {
-		type		=> t( 'Holiday' ),
+		type		=> __t( 'Holiday' ),
 		optional	=> 1,
 	    },
 	    hour		=> {
-		type		=> t( 'Hour' ),
+		type		=> __t( 'Hour' ),
 		default		=> 0,
 	    },
 	    minute		=> {
-		type		=> t( 'Minute' ),
+		type		=> __t( 'Minute' ),
 		default		=> 0,
 	    },
 	    second		=> {
-		type		=> t( 'Second' ),
+		type		=> __t( 'Second' ),
 		default		=> 0,
 	    },
 	    nanosecond		=> {
-		type		=> t( 'Nanosecond' ),
+		type		=> __t( 'Nanosecond' ),
 		default		=> 0,
 	    },
 	    time_zone		=> {
-		type		=> t( 'TimeZone' ),
+		type		=> __t( 'TimeZone' ),
 		optional	=> 1,
 	    },
 	    locale		=> {
-		type		=> t( 'Locale' ),
+		type		=> __t( 'Locale' ),
 		optional	=> 1,
 	    },
 	    formatter		=> {
-		type		=> t( 'Formatter' ),
+		type		=> __t( 'Formatter' ),
 		optional	=> 1,
 	    },
 	},
@@ -205,37 +210,37 @@ sub last_day_of_month {
 	name_is_optional	=> 1,
 	params			=> {
 	    year		=> {
-		type		=> t( 'Year' ),
+		type		=> __t( 'Year' ),
 	    },
 	    day_of_year		=> {
-		type		=> t( 'DayOfYear' ),
+		type		=> __t( 'DayOfYear' ),
 	    },
 	    hour		=> {
-		type		=> t( 'Hour' ),
+		type		=> __t( 'Hour' ),
 		default		=> 0,
 	    },
 	    minute		=> {
-		type		=> t( 'Minute' ),
+		type		=> __t( 'Minute' ),
 		default		=> 0,
 	    },
 	    second		=> {
-		type		=> t( 'Second' ),
+		type		=> __t( 'Second' ),
 		default		=> 0,
 	    },
 	    nanosecond		=> {
-		type		=> t( 'Nanosecond' ),
+		type		=> __t( 'Nanosecond' ),
 		default		=> 0,
 	    },
 	    time_zone		=> {
-		type		=> t( 'TimeZone' ),
+		type		=> __t( 'TimeZone' ),
 		optional	=> 1,
 	    },
 	    locale		=> {
-		type		=> t( 'Locale' ),
+		type		=> __t( 'Locale' ),
 		optional	=> 1,
 	    },
 	    formatter		=> {
-		type		=> t( 'Formatter' ),
+		type		=> __t( 'Formatter' ),
 		optional	=> 1,
 	    },
 	},
@@ -379,39 +384,39 @@ sub quarter {
 	name_is_optional	=> 1,
 	params			=> {
 	    year		=> {
-		type		=> t( 'Year' ),
+		type		=> __t( 'Year' ),
 		optional	=> 1,
 	    },
 	    month		=> {
-		type		=> t( 'Month' ),
+		type		=> __t( 'Month' ),
 		optional	=> 1,
 	    },
 	    day			=> {
-		type		=> t( 'DayOfMonth' ),
+		type		=> __t( 'DayOfMonth' ),
 		optional	=> 1,
 	    },
 	    holiday		=> {
-		type		=> t( 'Holiday' ),
+		type		=> __t( 'Holiday' ),
 		optional	=> 1,
 	    },
 	    hour		=> {
-		type		=> t( 'Hour' ),
+		type		=> __t( 'Hour' ),
 		optional	=> 1,
 	    },
 	    minute		=> {
-		type		=> t( 'Minute' ),
+		type		=> __t( 'Minute' ),
 		optional	=> 1,
 	    },
 	    second		=> {
-		type		=> t( 'Second' ),
+		type		=> __t( 'Second' ),
 		optional	=> 1,
 	    },
 	    nanosecond		=> {
-		type		=> t( 'Nanosecond' ),
+		type		=> __t( 'Nanosecond' ),
 		optional	=> 1,
 	    },
 	    locale		=> {
-		type		=> t( 'Locale' ),
+		type		=> __t( 'Locale' ),
 		optional	=> 1,
 	    },
 	},
@@ -557,7 +562,7 @@ sub quarter {
 	name_is_optional	=> 1,
 	params			=> {
 	    to			=> {
-		type		=> t( 'TruncationLevel' ),
+		type		=> __t( 'TruncationLevel' ),
 	    },
 	},
     );
