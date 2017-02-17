@@ -186,6 +186,7 @@ sub _new {
 	return $self;
 }
 
+# sub from_epoch; sub now; sub today; sub from_object;
 foreach my $method ( qw{ from_epoch now today from_object } ) {
     no strict qw{ refs };
     *$method = sub {
@@ -403,6 +404,41 @@ sub day_of_quarter {
 
 *doq = \&day_of_quarter;
 
+sub am_or_pm {
+    splice @_, 1, $#_, '%p';
+    goto &strftime;
+}
+
+sub era_abbr {
+    return $_[0]->year() < 1 ? 'BSR' : 'SR';
+}
+
+# deprecated in DateTime
+# *era = \&era_abbr;
+
+*christian_era = *secular_era = \&era_abbr;
+
+sub year_with_era {
+    return join '', abs( $_[0]->ce_year() ), $_[0]->era_abbr();
+}
+
+sub year_with_christian_era {
+    return join '', abs( $_[0]->ce_year() ), $_[0]->christian_era();
+}
+
+sub year_with_secular_era {
+    return join '', abs( $_[0]->ce_year() ), $_[0]->secular_era();
+}
+
+sub era_name {
+    return $_[0]->year() < 1 ? 'Before Shire Reckoning' : 'Shire Reckoning';
+}
+
+sub ce_year {
+    my $year = $_[0]->year();
+    return $year > 0 ? $year : $year - 1;
+}
+
 # Set methods
 
 {
@@ -497,6 +533,16 @@ sub day_of_quarter {
 
 	return $self;
     }
+}
+
+# sub set_year; sub set_month; sub set_dat; sub set_holiday;
+# sub set_hour; sub set_minute; sub set_second; sub set_nanosecond;
+foreach my $attr ( qw{
+    year month day holiday hour minute second nanosecond
+} ) {
+    my $method = "set_$attr";
+    no strict qw{ refs };
+    *$method = sub { $_[0]->set( $attr => $_[1] ) };
 }
 
 {
@@ -664,12 +710,14 @@ sub on_date {
 # sub time_zone; sub time_zone_long_name; sub time_zone_short_name
 # sub epoch; sub hires_epoch; sub utc_rd_values; sub utc_rd_as_seconds;
 # sub locale;
+# sub set_formatter; sub set_locale;
 foreach my $method ( qw{
     hour minute second nanosecond
     fractional_second millisecond microsecond
     time_zone time_zone_long_name time_zone_short_name
     epoch hires_epoch utc_rd_values utc_rd_as_seconds
     locale
+    set_formatter set_locale
 } ) {
     no strict qw{ refs };
     *$method = sub {
@@ -679,9 +727,11 @@ foreach my $method ( qw{
 }
 
 # sub day_of_month_0; sub day_0; sub mday_0;
-# sub quarter_0; sub day_of_quarter_0;
+# sub day_of_year_0; sub doy_0;
+# sub quarter_0; sub day_of_quarter_0; sub doq_0;
 foreach my $method ( qw{
     day_of_month day mday
+    day_of_year doy
     quarter day_of_quarter doq
 } ) {
     my $method_0 = $method . '_0';
@@ -1075,6 +1125,25 @@ Returns the abbreviation of the quarter, as determined by the locale.
 Returns the day of the date in the quarter, in the range 1 to 91. If the
 day is Midyear's day or the Overlithe, you get 1.
 
+=head3 era_name
+
+Returns either C<'Shire Reckoning'> if the year is positive, or
+C<'Before Shire Reckoning'> otherwise.
+
+=head3 era_abbr
+
+Returns either C<'SR'> if the year is positive, or C<'BSR'> otherwise.
+
+=head3 christian_era
+
+This really does not apply to the Shire calendar, but it is part of the
+L<DateTime|DateTime> interface. Despite its name, it returns the same
+thing that L<era_abbr()|/era_abbr> does.
+
+=head3 secular_era
+
+Returns the same thing L<era_abbr()|/era_abbr> does.
+
 =head3 utc_rd_values
 
 Returns the UTC rata die days, seconds, and nanoseconds. Ignores
@@ -1196,6 +1265,14 @@ Otherwise, unanticipated results may occur.
 As in the L<new()|/new> constructor, time parameters have no effect on
 the shire dates returned.  However, they are maintained in case the
 object is converted to another calendar which supports time.
+
+=head3 set_holiday
+
+This convenience method is implemented in terms of
+
+    $dts->set( holiday => ... );
+
+All the other C<set_*> methods from L<DateTime> are also provided.
 
 =head3 truncate
 

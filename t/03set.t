@@ -21,7 +21,7 @@ $shire->set(month => 'Thrimidge',
 	    year => 1420);
 is($shire->month, 5);
 is($shire->year, 1420);
-$shire->set(holiday => 'Overlithe');
+$shire->set_holiday( 'Overlithe' );
 is($shire->holiday, 4);
 $shire->set(month => 2);
 is($shire->month, 2);
