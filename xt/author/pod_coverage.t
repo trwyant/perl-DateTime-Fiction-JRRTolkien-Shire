@@ -34,9 +34,10 @@ eod
 	    ],
 	    # The following are DateTime methods not documented by that
 	    # module in any way that Pod::Coverage recognizes
-#	    trustme	=> [
-#		qr{ \A truncate \z }smx,
-#	    ],
+	    trustme	=> [
+		qr{ \A doq \z }smx,
+		qr{ _0 \z }smx,
+	    ],
 	    coverage_class => 'Pod::Coverage::CountParents'
 	});
 

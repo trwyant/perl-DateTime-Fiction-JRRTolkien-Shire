@@ -373,8 +373,35 @@ sub quarter {
     my ( $self ) = @_;
     my $week_number = $self->week_number()
 	or return 0;
-    return POSIX::floor( ( $week_number - 1 ) / 7 ) + 1;
+    return POSIX::floor( ( $week_number - 1 ) / 13 ) + 1;
 }
+
+sub quarter_name {
+    splice @_, 1, $#_, 'quarter_format_wide';
+    goto &_quarter_text;
+}
+
+sub quarter_abbr {
+    splice @_, 1, $#_, 'quarter_format_abbreviated';
+    goto &_quarter_text;
+}
+
+sub _quarter_text {
+    my ( $self, $method ) = @_;
+    my $quarter = $self->quarter()
+	or return '';
+    return $self->locale()->$method()->[ $quarter - 1 ];
+}
+
+
+sub day_of_quarter {
+    my ( $self ) = @_;
+    my $clone = $self->clone();
+    $clone->truncate( to => 'quarter' );
+    return ( $self->utc_rd_values() )[0] - ( $clone->utc_rd_values())[0] + 1;
+}
+
+*doq = \&day_of_quarter;
 
 # Set methods
 
@@ -636,17 +663,30 @@ sub on_date {
 # sub fractional_second; sub millisecond; sub microsecond;
 # sub time_zone; sub time_zone_long_name; sub time_zone_short_name
 # sub epoch; sub hires_epoch; sub utc_rd_values; sub utc_rd_as_seconds;
+# sub locale;
 foreach my $method ( qw{
     hour minute second nanosecond
     fractional_second millisecond microsecond
     time_zone time_zone_long_name time_zone_short_name
     epoch hires_epoch utc_rd_values utc_rd_as_seconds
+    locale
 } ) {
     no strict qw{ refs };
     *$method = sub {
 	my ( $self, @arg ) = @_;
 	return $self->{dt}->$method( @arg )
     };
+}
+
+# sub day_of_month_0; sub day_0; sub mday_0;
+# sub quarter_0; sub day_of_quarter_0;
+foreach my $method ( qw{
+    day_of_month day mday
+    quarter day_of_quarter doq
+} ) {
+    my $method_0 = $method . '_0';
+    no strict qw{ refs };
+    *$method_0 = sub { $_[0]->$method() - 1 };
 }
 
 sub _croak {
@@ -1004,6 +1044,36 @@ Returns the epoch of the given object, just like in DateTime.
 
 Returns the epoch as a floating point number, with the fractional
 portion for fractional seconds.  Functions the same as in DateTime.
+
+=head3 quarter
+
+Returns the number of the quarter the day is in, in the range 1 to 4. If
+the day is part of no quarter (Midyear's day and the Overlithe), returns
+0.
+
+There is no textual justification for quarters, but they are in the
+L<DateTime|DateTime> interface, so I rationalized the concept the same
+way the Shire calendar rationalizes weeks. If you are not interested in
+non-canonical functionality, please ignore anything involving quarters.
+
+=head3 quarter_0
+
+Returns the number of the quarter the day is in, in the range 0 to 3. If
+the day is part of no quarter (Midyear's day and the Overlithe), returns
+-1.
+
+=head3 quarter_name
+
+Returns the name of the quarter, as determined by the locale.
+
+=head3 quarter_abbr
+
+Returns the abbreviation of the quarter, as determined by the locale.
+
+=head3 day_of_quarter
+
+Returns the day of the date in the quarter, in the range 1 to 91. If the
+day is Midyear's day or the Overlithe, you get 1.
 
 =head3 utc_rd_values
 
