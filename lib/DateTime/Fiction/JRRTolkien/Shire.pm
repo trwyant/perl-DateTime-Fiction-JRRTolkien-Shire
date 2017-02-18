@@ -1173,74 +1173,13 @@ Try
 This is a re-implementation imported from
 L<Date::Tolkien::Shire::Data|Date::Tolkien::Shire::Data>. It is intended
 to be reasonably compatible with the same-named L<DateTime|DateTime>
-method, but has some additions. Briefly:
-
-=over
-
-=item %EA
-
-The full traditional weekday name, or C<''> for holidays that are part
-of no week.
-
-=item %Ea
-
-The abbreviated traditional weekday name, or C<''> for holidays that are
-part of no week.
-
-=item %ED
-
-The L<__on_date_accented()|/__on_date_accented> text for the given date.
-
-You can get a leading C<"\n"> if there was an actual event using
-C<'%En%ED'>.
-
-=item %Ed
-
-The L<__on_date()|/__on_date> text for the given date.
-
-You can get a leading C<"\n"> if there was an actual event using
-C<'%En%Ed'>. So to mimic L<Date::Tolkien::Shire|Date::Tolkien::Shire>
-L<on_date()|Date::Tolkien::Shire/on_date>, use C<'%Ex%n%En%Ed'>.
-
-=item %EE
-
-The full holiday name, or C<''> for non-holidays.
-
-=item %Ee
-
-The abbreviated holiday name, or C<''> for non-holidays.
-
-=item %En
-
-Inserts nothing, but causes the next C<%Ed> or C<%ED> (and B<only> the
-next one) to have a C<"\n"> prefixed if there was an actual event on the
-date.
-
-=item %Ex
-
-Like C<'%c'>, but without the time of day, and with full names rather
-than abbreviations.
-
-=item %{{format||format||format}}
-
-The formatter chooses the first format for normal days (i.e. part of a
-month), the second for holidays that are part of a week (i.e. 2 Yule, 1
-Lithe, 2 Lithe and 1 Yule), or the third for holidays that are not part
-of a week (i.e. Midyear's day and the Overlithe). If the second or third
-formats are omitted, the preceding format is used. Trailing C<||>
-operators can also be omitted. If you need to specify more than one
-right curly bracket or vertical bar as part of a format, separate them
-with percent signs (i.e. C<'|%|%|'>.
-
-=back
-
-This method also supports certain Glibc extensions; specifically the
-formatting flags C<'-'>, C<'_'>, C<'0'> and C<'^'>, and user-specified
-field widths.
+method, but has some additions to deal with the peculiarities of the
+Shire calendar.
 
 See L<__format()|Date::Tolkien::Shire::Data/__format> in
-L<Date::Tolkien::Shire::Data|Date::Tolkien::Shire::Data> for full
-documentation, which takes precedence over anything said here.
+L<Date::Tolkien::Shire::Data|Date::Tolkien::Shire::Data> for the
+documentation, since that is the code that does the heavy lifting for
+us.
 
 =head2 "Set" Methods
 
