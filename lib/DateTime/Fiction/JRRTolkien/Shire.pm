@@ -439,6 +439,43 @@ sub ce_year {
     return $year > 0 ? $year : $year - 1;
 }
 
+sub ymd {
+    my ( $self, $sep ) = @_;
+    defined $sep
+	or $sep = '-';
+    return $self->strftime( "%{{%Y$sep%m$sep%d||%Y$sep%Ee}}" );
+}
+
+*date = \&ymd;
+
+sub dmy {
+    my ( $self, $sep ) = @_;
+    defined $sep
+	or $sep = '-';
+    return $self->strftime( "%{{%d$sep%m$sep%Y||%Ee$sep%Y}}" );
+}
+
+sub mdy {
+    my ( $self, $sep ) = @_;
+    defined $sep
+	or $sep = '-';
+    return $self->strftime( "%{{%m$sep%d$sep%Y||%Ee$sep%Y}}" );
+}
+
+sub hms {
+    my ( $self, $sep ) = @_;
+    defined $sep
+	or $sep = ':';
+    return $self->strftime( "%H$sep%M$sep%S" );
+}
+
+# The DateTime code says the following circumlocution prevents
+# overriding of CORE::time
+*DateTime::Fiction::JRRTolkien::Shire::time = \&hms;
+
+sub iso8601 { return join 'S', map { $_[0]->$_() } qw{ ymd hms } }
+*datetime = \&iso8601;
+
 # Set methods
 
 {
@@ -1165,6 +1202,13 @@ Try
 
     perl -MDateTime::Fiction::JRRTolkien::Shire
       -le 'print DateTime::Fiction::JRRTolkien::Shire->now->on_date;'
+
+=head2 iso8601
+
+This is not, of course, a true ISO-8601 implementation. The differences
+are that holidays are represented by their abbreviations (e.g.
+C<'1419-Myd'>, and that the date and time are separated by the letter
+C<'S'>, not C<'T'>.
 
 =head2 strftime
 
