@@ -11,15 +11,15 @@ use Date::Tolkien::Shire::Data qw{
     __day_of_week
     __day_of_year_to_date
     __format
-    __holiday_name __holiday_short
+    __holiday_name __holiday_abbr
     __holiday_name_to_number
     __is_leap_year
-    __month_name __month_short
+    __month_name __month_abbr
     __month_name_to_number
-    __quarter __quarter_name __quarter_short
+    __quarter __quarter_name __quarter_abbr
     __rata_die_to_year_day
-    __trad_weekday_name __trad_weekday_short
-    __weekday_name __weekday_short
+    __trad_weekday_name __trad_weekday_abbr
+    __weekday_name __weekday_abbr
     __year_day_to_rata_die
     GREGORIAN_RATA_DIE_TO_SHIRE
 };
@@ -360,7 +360,7 @@ sub month_name {
 
 sub month_abbr {
     my ( $self ) = @_;
-    return __month_short( $self->month() );
+    return __month_abbr( $self->month() );
 }
 
 sub day_of_month {
@@ -395,12 +395,12 @@ sub day_name_trad {
 
 sub day_abbr {
     my ( $self ) = @_;
-    return __weekday_short( $self->day_of_week() );
+    return __weekday_abbr( $self->day_of_week() );
 }
 
 sub day_abbr_trad {
     my ( $self ) = @_;
-    return __trad_weekday_short( $self->day_of_week() );
+    return __trad_weekday_abbr( $self->day_of_week() );
 }
 
 sub holiday {
@@ -418,7 +418,7 @@ sub holiday_name {
 
 sub holiday_abbr {
     my ( $self ) = @_;
-    return __holiday_short( $self->holiday() );
+    return __holiday_abbr( $self->holiday() );
 }
 
 sub is_leap_year {
@@ -479,7 +479,7 @@ sub quarter_name {
 
 sub quarter_abbr {
     my ( $self ) = @_;
-    return __quarter_short( $self->quarter() );
+    return __quarter_abbr( $self->quarter() );
 }
 
 sub day_of_quarter {
