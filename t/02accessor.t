@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 52;
+use Test::More tests => 55;
 use DateTime;
 use DateTime::Fiction::JRRTolkien::Shire;
 
@@ -11,7 +11,6 @@ my $shire = DateTime::Fiction::JRRTolkien::Shire->new(year => 1419,
 						      day => 25,
 						      hour => 10,
 						      minute => 15,
-						      locale => 'en-US',
 						  );
 
 is($shire->year, 1419);
@@ -19,6 +18,7 @@ is($shire->is_leap_year, 0);
 
 is($shire->month, 3);
 is($shire->month_name, 'Rethe');
+is( $shire->month_abbr(), 'Ret' );
 
 is($shire->day, 25);
 is($shire->mday, 25);
@@ -31,10 +31,11 @@ is($shire->wday, 2);
 is($shire->dow, 2);
 is($shire->day_of_week, 2);
 is($shire->day_name, 'Sunday');
-is($shire->day_name_trad, 'Sunnendei');
+is($shire->day_abbr, 'Sun');
 
 is($shire->holiday, 0);
 is($shire->holiday_name, '');
+is($shire->holiday_abbr, '');
 
 is($shire->day_of_year, 86);
 is($shire->doy, 86);
@@ -82,6 +83,8 @@ my $shire_h = DateTime::Fiction::JRRTolkien::Shire->new(
 is( $shire_h->holiday(), 3, q<Holiday number of Midyear's day> );
 is( $shire_h->holiday_name(), q<Midyear's day>,
     q<Holiday name of Midyear's day> );
+is( $shire_h->holiday_abbr(), q<Myd>,
+    q<Holiday abbreviation of Midyear's day> );
 is( $shire_h->week_number(), 0, q<Week number of Midyear's day> );
 
 is( $shire_h->ymd( '/' ), '1419/Myd' );

@@ -11,14 +11,15 @@ use Date::Tolkien::Shire::Data qw{
     __day_of_week
     __day_of_year_to_date
     __format
-    __holiday_name
+    __holiday_name __holiday_short
     __holiday_name_to_number
     __is_leap_year
-    __month_name
+    __month_name __month_short
     __month_name_to_number
+    __quarter __quarter_name __quarter_short
     __rata_die_to_year_day
-    __trad_weekday_name
-    __weekday_name
+    __trad_weekday_name __trad_weekday_short
+    __weekday_name __weekday_short
     __year_day_to_rata_die
     GREGORIAN_RATA_DIE_TO_SHIRE
 };
@@ -34,6 +35,8 @@ use Params::ValidationCompiler ();
 our $VERSION = '0.22';
 
 use constant DAY_NUMBER_MIDYEARS_DAY	=> 183;
+
+use constant HASH_REF	=> ref {};
 
 my @delegate_to_dt = qw( hour minute second nanosecond locale );
 
@@ -139,6 +142,14 @@ sub _recalc_Shire {
 		type		=> __t( 'Formatter' ),
 		optional	=> 1,
 	    },
+	    accented		=> {
+		type		=> __t( 'Bool' ),
+		optional	=> 1,
+	    },
+	    traditional		=> {
+		type		=> __t( 'Bool' ),
+		optional	=> 1,
+	    },
 	},
     );
 
@@ -157,45 +168,94 @@ sub _recalc_Shire {
 sub _new {
     my ( $class, %my_arg ) = @_;
 
-	if ( $my_arg{month} ) {
-	    $my_arg{month} = __month_name_to_number( $my_arg{month} );
-	    $my_arg{day} ||= 1;
-	    $my_arg{holiday} = 0;
-	} else {
-	    $my_arg{holiday} ||= $my_arg{day} || 1;
-	    $my_arg{holiday} = __holiday_name_to_number(
-		$my_arg{holiday} );
-	    $my_arg{month} = $my_arg{day} = 0;
-	}
-	$my_arg{leapyear} = __is_leap_year( $my_arg{year} );
-	$my_arg{wday} = __day_of_week(
-	    $my_arg{month},
-	    $my_arg{day} || $my_arg{holiday},
-	);
+    if ( $my_arg{month} ) {
+	$my_arg{month} = __month_name_to_number( $my_arg{month} );
+	$my_arg{day} ||= 1;
+	$my_arg{holiday} = 0;
+    } else {
+	$my_arg{holiday} ||= $my_arg{day} || 1;
+	$my_arg{holiday} = __holiday_name_to_number(
+	    $my_arg{holiday} );
+	$my_arg{month} = $my_arg{day} = 0;
+    }
+    $my_arg{leapyear} = __is_leap_year( $my_arg{year} );
+    $my_arg{wday} = __day_of_week(
+	$my_arg{month},
+	$my_arg{day} || $my_arg{holiday},
+    );
 
-	my %dt_arg;
-	foreach my $key ( @delegate_to_dt ) {
-	    defined $my_arg{$key}
-		and $dt_arg{$key} = delete $my_arg{$key};
-	}
+    my %dt_arg;
+    foreach my $key ( @delegate_to_dt ) {
+	defined $my_arg{$key}
+	    and $dt_arg{$key} = delete $my_arg{$key};
+    }
 
-	my $self = bless \%my_arg, $class;
+    my $self = bless \%my_arg, $class;
 
-	$self->_recalc_DateTime(%dt_arg);
+    $self->_recalc_DateTime(%dt_arg);
 
-	return $self;
+    return $self;
 }
 
-# sub from_epoch; sub now; sub today; sub from_object;
-foreach my $method ( qw{ from_epoch now today from_object } ) {
-    no strict qw{ refs };
-    *$method = sub {
-	my ( $class, @arg ) = @_;
+{
+    my $validator = Params::ValidationCompiler::validation_for(
+	name			=> '_validation_for_output_options',
+	name_is_optional	=> 1,
+	params			=> {
+	    accented		=> {
+		type		=> __t( 'Bool' ),
+		optional	=> 1,
+	    },
+	    traditional		=> {
+		type		=> __t( 'Bool' ),
+		optional	=> 1,
+	    },
+	},
+    );
 
-	return bless {
-	    dt		=> DateTime->$method( @arg ),
+    # sub from_epoch; sub now; sub today;
+    foreach my $method ( qw{ from_epoch now today } ) {
+	no strict qw{ refs };
+	*$method = sub {
+	    my ( $class, %arg ) = @_;
+
+	    my %my_arg;
+	    exists $my_arg{$_} and $my_arg{$_} = delete $arg{$_}
+		for qw{ accented traditional };
+
+	    %my_arg = $validator->( %my_arg );
+
+	    return bless {
+		dt		=> DateTime->$method( %arg ),
+		recalc	=> 1,
+		%my_arg,
+	    }, $class;
+	}
+    }
+
+    sub from_object {
+	my ( $class, %arg ) = @_;
+
+	my %my_arg;
+	my $shire_object = $arg{object} && eval {
+	    $arg{object}->isa( __PACKAGE__ ) };
+	foreach my $name ( qw{ accented traditional } ) {
+	    if ( exists $arg{$name} ) {
+		$my_arg{$name} = delete $arg{$name};
+	    } elsif ( $shire_object ) {
+		$my_arg{$name} = $arg{object}->$name();
+	    }
+	}
+
+	%my_arg = $validator->( %my_arg );
+
+	my $self = bless {
+	    dt	=> DateTime->from_object( %arg ),
 	    recalc	=> 1,
+	    %my_arg,
 	}, $class;
+
+	return $self;
     }
 }
 
@@ -244,6 +304,14 @@ sub last_day_of_month {
 		type		=> __t( 'Formatter' ),
 		optional	=> 1,
 	    },
+	    accented		=> {
+		type		=> __t( 'Bool' ),
+		optional	=> 1,
+	    },
+	    traditional		=> {
+		type		=> __t( 'Bool' ),
+		optional	=> 1,
+	    },
 	},
     );
 
@@ -274,16 +342,26 @@ sub year {
     return $self->{year};
 } # end sub year
 
+*year_number	= \&year;	# sub year_number
+
 sub month {
     my $self = shift;
     $self->_recalc_Shire if $self->{recalc};
     return $self->{month};
 } # end sub month
 
+*mon = \&month;			# sub mon;
+*month_number = \&month;	# sub month_number;
+
 sub month_name {
-    my $self = shift;
+    my ( $self ) = @_;
     return __month_name( $self->month() );
-} #end sub month_name
+}
+
+sub month_abbr {
+    my ( $self ) = @_;
+    return __month_short( $self->month() );
+}
 
 sub day_of_month {
     my $self = shift;
@@ -291,8 +369,9 @@ sub day_of_month {
     return $self->{day};
 } # end sub day_of_month
 
-*day = \&day_of_month;	# sub day
-*mday = \&day_of_month;	# sub mday
+*day = \&day_of_month;		# sub day
+*mday = \&day_of_month;		# sub mday
+*day_number = \&day_of_month;	# sub day_number
 
 sub day_of_week {
     my $self = shift;
@@ -300,8 +379,9 @@ sub day_of_week {
     return $self->{wday};
 } # end sub day_of_week
 
-*wday  = \&day_of_week;	# sub wday
-*dow  = \&day_of_week;	# sub dow
+*wday  = \&day_of_week;			# sub wday
+*dow  = \&day_of_week;			# sub dow
+*weekday_number = \&day_of_week;	# sub weekday_number
 
 sub day_name {
     my ( $self ) = @_;
@@ -313,15 +393,32 @@ sub day_name_trad {
     return __trad_weekday_name( $self->day_of_week() );
 }
 
+sub day_abbr {
+    my ( $self ) = @_;
+    return __weekday_short( $self->day_of_week() );
+}
+
+sub day_abbr_trad {
+    my ( $self ) = @_;
+    return __trad_weekday_short( $self->day_of_week() );
+}
+
 sub holiday {
     my ( $self ) = @_;
     $self->_recalc_Shire if $self->{recalc};
     return $self->{holiday};
 }
 
+*holiday_number	= \&holiday;	# sub holiday_number;
+
 sub holiday_name {
     my ( $self ) = @_;
     return __holiday_name( $self->holiday() );
+}
+
+sub holiday_abbr {
+    my ( $self ) = @_;
+    return __holiday_short( $self->holiday() );
 }
 
 sub is_leap_year {
@@ -372,28 +469,18 @@ sub week_number {
 
 sub quarter {
     my ( $self ) = @_;
-    my $week_number = $self->week_number()
-	or return 0;
-    return POSIX::floor( ( $week_number - 1 ) / 13 ) + 1;
+    return __quarter( $self->month(), $self->day() || $self->holiday() );
 }
 
 sub quarter_name {
-    splice @_, 1, $#_, 'quarter_format_wide';
-    goto &_quarter_text;
+    my ( $self ) = @_;
+    return __quarter_name( $self->quarter() );
 }
 
 sub quarter_abbr {
-    splice @_, 1, $#_, 'quarter_format_abbreviated';
-    goto &_quarter_text;
+    my ( $self ) = @_;
+    return __quarter_short( $self->quarter() );
 }
-
-sub _quarter_text {
-    my ( $self, $method ) = @_;
-    my $quarter = $self->quarter()
-	or return '';
-    return $self->locale()->$method()->[ $quarter - 1 ];
-}
-
 
 sub day_of_quarter {
     my ( $self ) = @_;
@@ -402,6 +489,7 @@ sub day_of_quarter {
     return ( $self->utc_rd_values() )[0] - ( $clone->utc_rd_values())[0] + 1;
 }
 
+# sub doq;
 *doq = \&day_of_quarter;
 
 sub am_or_pm {
@@ -446,6 +534,7 @@ sub ymd {
     return $self->strftime( "%{{%Y$sep%m$sep%d||%Y$sep%Ee}}" );
 }
 
+# sub date;
 *date = \&ymd;
 
 sub dmy {
@@ -469,12 +558,20 @@ sub hms {
     return $self->strftime( "%H$sep%M$sep%S" );
 }
 
+# sub time;
 # The DateTime code says the following circumlocution prevents
 # overriding of CORE::time
 *DateTime::Fiction::JRRTolkien::Shire::time = \&hms;
 
 sub iso8601 { return join 'S', map { $_[0]->$_() } qw{ ymd hms } }
-*datetime = \&iso8601;
+
+# sub accented; sub traditional;
+foreach my $name ( qw{ accented traditional } ) {
+    no strict qw{ refs };
+    *$name = sub { return $_[0]->{$name} };
+}
+
+*datetime = \&iso8601;		# sub datetime;
 
 # Set methods
 
@@ -519,6 +616,14 @@ sub iso8601 { return join 'S', map { $_[0]->$_() } qw{ ymd hms } }
 		type		=> __t( 'Locale' ),
 		optional	=> 1,
 	    },
+	    accented		=> {
+		type		=> __t( 'Bool' ),
+		optional	=> 1,
+	    },
+	    traditional		=> {
+		type		=> __t( 'Bool' ),
+		optional	=> 1,
+	    },
 	},
     );
 
@@ -552,8 +657,10 @@ sub iso8601 { return join 'S', map { $_[0]->$_() } qw{ ymd hms } }
 	    $self->{holiday} = 0;
 	}
 
-	defined $my_arg{year}
-	    and $self->{year} = $my_arg{year};
+	foreach my $name ( qw{ year accented traditional } ) {
+	    defined $my_arg{$name}
+		and $self->{$name} = $my_arg{$name};
+	}
 
 	$self->{leapyear} = __is_leap_year( $self->{year} );
 	$self->{wday} = __day_of_week(
@@ -572,10 +679,13 @@ sub iso8601 { return join 'S', map { $_[0]->$_() } qw{ ymd hms } }
     }
 }
 
-# sub set_year; sub set_month; sub set_dat; sub set_holiday;
+# sub set_year; sub set_month; sub set_day; sub set_holiday;
 # sub set_hour; sub set_minute; sub set_second; sub set_nanosecond;
+# sub set_accented; sub set_traditional;
 foreach my $attr ( qw{
-    year month day holiday hour minute second nanosecond
+    year month day holiday
+    hour minute second nanosecond
+    accented traditional
 } ) {
     my $method = "set_$attr";
     no strict qw{ refs };
@@ -729,7 +839,6 @@ sub _check_date {
     return;
 }
 
-
 sub _compare { return $_[0]->{dt} <=> $_[1]->{dt}; }
 
 sub _stringify {
@@ -746,15 +855,13 @@ sub on_date {
 # sub fractional_second; sub millisecond; sub microsecond;
 # sub time_zone; sub time_zone_long_name; sub time_zone_short_name
 # sub epoch; sub hires_epoch; sub utc_rd_values; sub utc_rd_as_seconds;
-# sub locale;
-# sub set_formatter; sub set_locale;
+# sub set_formatter; sub offset; sub locale; sub set_locale;
 foreach my $method ( qw{
     hour minute second nanosecond
     fractional_second millisecond microsecond
     time_zone time_zone_long_name time_zone_short_name
     epoch hires_epoch utc_rd_values utc_rd_as_seconds
-    locale
-    set_formatter set_locale
+    set_formatter offset locale set_locale
 } ) {
     no strict qw{ refs };
     *$method = sub {
@@ -766,10 +873,14 @@ foreach my $method ( qw{
 # sub day_of_month_0; sub day_0; sub mday_0;
 # sub day_of_year_0; sub doy_0;
 # sub quarter_0; sub day_of_quarter_0; sub doq_0;
+# sub day_of_week_0; sub wday_0; sub dow_0;
+# sub month_0; sub mon_0;
 foreach my $method ( qw{
     day_of_month day mday
     day_of_year doy
     quarter day_of_quarter doq
+    day_of_week wday dow
+    month mon
 } ) {
     my $method_0 = $method . '_0';
     no strict qw{ refs };
@@ -908,10 +1019,15 @@ map to holidays as follows:
     5 => 2 Lithe
     6 => 1 Yule
 
-The new method will also take parameters for hour, minute, second,
-nanosecond, time_zone and locale.  If given, these parameters will be
-stored in case the object is converted to another class that supports
-times.
+The C<new()> method will also take parameters for hour, minute, second,
+nanosecond, time_zone and locale. If given, these parameters will be
+stored in case the object is converted to another class that makes use
+of these attributes.
+
+Additionally, parameters C<accented> and C<traditional> control the form
+of C<on_date()> text (accented or not) and week day names (traditional
+or common) generated. These must be C<undef>, C<''>, or C<0> (for false)
+or C<1> (for true).
 
 If a day is not given, it will default to 1.  If neither a day or month
 is given, the date will default to 2 Yule, the first day of the year.
@@ -923,13 +1039,15 @@ is given, the date will default to 2 Yule, the first day of the year.
          ...
      );
 
-Same as in DateTime.
+Same as in DateTime, but you can also specify parameters C<accented> and
+C<traditional> (see L<new()|/new>).
 
 =head3 now
 
     $dts = DateTime::Fiction::JRRTolkien::Shire->now( ... );
 
-Same as in DateTime.  Note that this is equivalent to
+Same as in DateTime, but you can also specify parameters C<accented> and
+C<traditional> (see L<new()|/new>).  Note that this is equivalent to
 
     from_epoch( epoch => time() );
 
@@ -937,7 +1055,8 @@ Same as in DateTime.  Note that this is equivalent to
 
     $dts = DateTime::Fiction::JRRTolkien::Shire->today( ... );
 
-Same as in DateTime.
+Same as in DateTime, but you can also specify parameters C<accented> and
+C<traditional> (see L<new()|/new>).
 
 =head3 from_object
 
@@ -946,8 +1065,9 @@ Same as in DateTime.
         ...
     );
 
-Same as in DateTime. Takes any other DateTime calendar object and
-converts it to a DateTime::Fiction::JRRTolkien::Shire object.
+Same as in DateTime, but you can also specify parameters C<accented> and
+C<traditional> (see L<new()|/new>). Takes any other DateTime calendar
+object and converts it to a DateTime::Fiction::JRRTolkien::Shire object.
 
 =head3 last_day_of_month
 
@@ -996,12 +1116,24 @@ Returns C<'Shire'>.
 
 Returns the year.
 
+=head3 year_number
+
+Synonym for L<year()|/year>.
+
 =head3 month
 
     print 'Month: ', $dts->month(), "\n";
 
 Returns the month number, from 1 to 12.  If the date is a holiday, a 0
 is returned for the month.
+
+=head3 mon
+
+Synonym for L<month()|/month>.
+
+=head3 month_number
+
+Synonym for L<month()|/month>.
 
 =head3 month_name
 
@@ -1018,6 +1150,10 @@ Returns the day of the current month, from 1 to 30.  If the date is a
 holiday, 0 is returned.
 
 =head3 day
+
+Synonym for L<day_of_month()|/day_of_month>.
+
+=head3 day_number
 
 Synonym for L<day_of_month()|/day_of_month>.
 
@@ -1040,20 +1176,47 @@ Synonym for L<day_of_week|/day_of_week>.
 
 Synonym for L<day_of_week|/day_of_week>.
 
+=head3 weekday_number
+
+Synonym for L<day_of_week|/day_of_week>.
+
 =head3 day_name
 
-    print 'Name of day of week: ', $dts->day_name(), "\n";
+    print 'Common name of day of week: ',
+        $dts->day_name(), "\n";
 
-Returns the name of the day of the week, or an empty string if the
-day is not part of any week.
+Returns the common name of the day of the week, or an empty string if
+the day is not part of any week. This method is not affected by the
+L<traditional()|/traditional> setting, for historical reasons.
 
 =head3 day_name_trad
 
     print 'Traditional name of day of week: ',
         $dts->day_name_trad(), "\n";
 
-Like day_name, but returns the more traditional name of the days of the
-week, as defined in Appendix D.
+Returns the common name of the day of the week, or an empty string if
+the day is not part of any week. This method is not affected by the
+L<traditional()|/traditional> setting, for historical reasons.
+
+=head3 day_abbr
+
+    print 'Common abbreviation of day of week: ',
+        $dts->day_abbr(), "\n";
+
+Returns the common abbreviation of the day of the week, or an empty
+string if the day is not part of any week. This method is not affected
+by the L<traditional()|/traditional> setting, for consistency with
+L<day_name()|/day_name>.
+
+=head3 day_abbr_trad
+
+    print 'Traditional abbreviation of day of week: ',
+        $dts->day_abbr_trad(), "\n";
+
+Returns the traditional abbreviation of the day of the week, or an empty
+string if the day is not part of any week. This method is not affected
+by the L<traditional()|/traditional> setting, for consistency with
+L<day_name_trad()|/day_name_trad>.
 
 =head3 day_of_year
 
@@ -1072,12 +1235,23 @@ Synonym for L<day_of_year()|/day_of_year>.
 Returns the holiday number (given in the description of the
 L<new()|/new> constructor).  If the day is not a holiday, 0 is returned.
 
+=head3 holiday_number
+
+Synonym for L<holiday()|/holiday>.
+
 =head3 holiday_name
 
     print 'Holiday name: ', $dts->holiday_name(), "\n";
 
 Returns the name of the holiday. If the day is not a holiday, an empty
 string is returned.
+
+=head3 holiday_abbr
+
+    print 'Holiday abbreviation: ', $dts->holiday_abbr(), "\n";
+
+Returns the abbreviation of the holiday. If the day is not a holiday, an
+empty string is returned.
 
 =head3 is_leap_year
 
@@ -1151,11 +1325,11 @@ the day is part of no quarter (Midyear's day and the Overlithe), returns
 
 =head3 quarter_name
 
-Returns the name of the quarter, as determined by the locale.
+Returns the name of the quarter.
 
 =head3 quarter_abbr
 
-Returns the abbreviation of the quarter, as determined by the locale.
+Returns the abbreviation of the quarter.
 
 =head3 day_of_quarter
 
@@ -1203,14 +1377,14 @@ Try
     perl -MDateTime::Fiction::JRRTolkien::Shire
       -le 'print DateTime::Fiction::JRRTolkien::Shire->now->on_date;'
 
-=head2 iso8601
+=head3 iso8601
 
 This is not, of course, a true ISO-8601 implementation. The differences
 are that holidays are represented by their abbreviations (e.g.
 C<'1419-Myd'>, and that the date and time are separated by the letter
 C<'S'>, not C<'T'>.
 
-=head2 strftime
+=head3 strftime
 
     print $dts->strftime( '%Ex%n' );
 
@@ -1225,6 +1399,18 @@ L<Date::Tolkien::Shire::Data|Date::Tolkien::Shire::Data> for the
 documentation, since that is the code that does the heavy lifting for
 us.
 
+=head3 accented
+
+This method returns a true value if the event descriptions returned by
+L<on_date()|/on_date> and L<strftime()|/strftime> are to be accented.
+
+=head3 traditional
+
+This method returns a true value if the dates returned by
+L<on_date()|/on_date>, L<strftime()|/strftime>, and stringification are
+to use traditional rather than common weekday names.
+
+
 =head2 "Set" Methods
 
 =head3 set
@@ -1235,19 +1421,18 @@ us.
     );
 
 Allows the day, month, and year to be changed.  It takes any parameters
-allowed by new constructor, including all those supported by DateTime
-and the holiday parameter, except for time_zone.  This is used in much
-the same way as new, with the exception that any parameters not given
-will be left as is.
-
-All parameters are optional, with the current values inserted if the
-values are not supplied.  However, with holidays not falling in any
-month, it is recommended that a day and month always be given together.
-Otherwise, unanticipated results may occur.
+allowed by the L<new()|/new> constructor, including all those supported
+by DateTime and the holiday parameter, except for time_zone. Any
+parameters not given will be left as is.  However, with holidays not
+falling in any month, it is recommended that a day and month always be
+given together.  Otherwise, unanticipated results may occur.
 
 As in the L<new()|/new> constructor, time parameters have no effect on
-the shire dates returned.  However, they are maintained in case the
+the Shire dates returned.  However, they are maintained in case the
 object is converted to another calendar which supports time.
+
+All C<set_*()> methods from L<DateTime|DateTime> are provided. In
+addition, you get the following:
 
 =head3 set_holiday
 
@@ -1255,7 +1440,17 @@ This convenience method is implemented in terms of
 
     $dts->set( holiday => ... );
 
-All the other C<set_*> methods from L<DateTime> are also provided.
+=head3 set_accented
+
+This convenience method is implemented in terms of
+
+    $dts->set( accented => ... );
+
+=head3 set_traditional
+
+This convenience method is implemented in terms of
+
+    $dts->set( traditional => ... );
 
 =head3 truncate
 

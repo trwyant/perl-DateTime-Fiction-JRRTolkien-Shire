@@ -1,10 +1,63 @@
 use strict;
 use warnings;
 
-use Test::More tests => 1;
+use charnames qw{ :full };
+
 use DateTime;
 use DateTime::Fiction::JRRTolkien::Shire;
 
-my $shire = DateTime::Fiction::JRRTolkien::Shire->new(year => 7463, month => 1, day => 8);
+use Test::More tests => 4;
 
-is($shire->on_date, "Sunday 8 Afteryule 7463\n\nThe Company of the Ring reaches Hollin, 1419.\n");
+my $u_circ	= "\N{LATIN SMALL LETTER U WITH CIRCUMFLEX}";
+
+my $shire;
+
+$shire = DateTime::Fiction::JRRTolkien::Shire->new(
+    year	=> 7463,
+    month	=> 1,
+    day		=> 8,
+);
+
+is( $shire->on_date, <<'EOD' );
+Sunday 8 Afteryule 7463
+
+The Company of the Ring reaches Hollin, 1419.
+EOD
+
+$shire = DateTime::Fiction::JRRTolkien::Shire->new(
+    year	=> 1419,
+    month	=> 1,
+    day		=> 15,
+);
+
+is( $shire->on_date, <<'EOD' );
+Sunday 15 Afteryule 1419
+
+The Bridge of Khazad-dum, and the fall of Gandalf, 1419.
+EOD
+
+$shire = DateTime::Fiction::JRRTolkien::Shire->new(
+    year	=> 1419,
+    month	=> 1,
+    day		=> 15,
+    traditional	=> 1,
+);
+
+is( $shire->on_date, <<'EOD' );
+Sunnendei 15 Afteryule 1419
+
+The Bridge of Khazad-dum, and the fall of Gandalf, 1419.
+EOD
+
+$shire = DateTime::Fiction::JRRTolkien::Shire->new(
+    year	=> 1419,
+    month	=> 1,
+    day		=> 15,
+    accented	=> 1,
+);
+
+is( $shire->on_date, <<"EOD" );
+Sunday 15 Afteryule 1419
+
+The Bridge of Khazad-d${u_circ}m, and the fall of Gandalf, 1419.
+EOD
