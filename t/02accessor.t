@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 55;
+use Test::More tests => 57;
 use DateTime;
 use DateTime::Fiction::JRRTolkien::Shire;
 
@@ -42,6 +42,8 @@ is($shire->doy, 86);
 
 is($shire->week_year, 1419);
 is($shire->week_number, 13);
+is( $shire->weekday_of_month(), 4 );
+is( $shire->week_of_month(), 4 );
 
 is( $shire->quarter(), 1 );
 is( $shire->quarter_0(), 0 );

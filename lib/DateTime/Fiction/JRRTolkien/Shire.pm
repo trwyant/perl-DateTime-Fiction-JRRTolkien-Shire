@@ -464,7 +464,7 @@ sub week_number {
 	    and --$yday;
     }
 
-    return int(($yday - 1) / 7) + 1;
+    return int( ( $yday - 1 ) / 7 ) + 1;
 }
 
 sub quarter {
@@ -851,17 +851,21 @@ sub on_date {
     goto &strftime;
 }
 
-# sub hour; sub minute; sub second; sub nanosecond;
+# sub hour; sub minute; sub min; sub second; sub sec; sub nanosecond;
+# sub hour_1; sub hour_12; sub hour_12_0;
 # sub fractional_second; sub millisecond; sub microsecond;
 # sub time_zone; sub time_zone_long_name; sub time_zone_short_name
 # sub epoch; sub hires_epoch; sub utc_rd_values; sub utc_rd_as_seconds;
 # sub set_formatter; sub offset; sub locale; sub set_locale;
+# sub mjd; sub jd;
 foreach my $method ( qw{
-    hour minute second nanosecond
+    hour minute min second sec nanosecond
+    hour_1 hour_12 hour_12_0
     fractional_second millisecond microsecond
     time_zone time_zone_long_name time_zone_short_name
     epoch hires_epoch utc_rd_values utc_rd_as_seconds
     set_formatter offset locale set_locale
+    mjd jd
 } ) {
     no strict qw{ refs };
     *$method = sub {
@@ -869,6 +873,11 @@ foreach my $method ( qw{
 	return $self->{dt}->$method( @arg )
     };
 }
+
+# The following work PROVIDED the DateTime implementation uses only the
+# public interface:
+*weekday_of_month = \&DateTime::weekday_of_month;	# sub weekday_of_month;
+*week_of_month = \&DateTime::week_of_month;	# sub week_of_month;
 
 # sub day_of_month_0; sub day_0; sub mday_0;
 # sub day_of_year_0; sub doy_0;
