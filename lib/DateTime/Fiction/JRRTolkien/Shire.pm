@@ -803,6 +803,31 @@ sub set_time_zone {
     return $self;
 }
 
+# The following two methods were lifted pretty much verbatim from
+# DateTime. The only changes were the guard against holidays (month ==
+# 0) and the use of POSIX::floor() rather than int() or use integer;
+sub weekday_of_month {
+    my ( $self ) = @_;
+    $self->month()
+	or return 0;
+    return POSIX::floor( ( ( $_[0]->day - 1 ) / 7 ) + 1 );
+}
+# ISO says that the first week of a year is the first week containing
+# a Thursday. Extending that says that the first week of the month is
+# the first week containing a Thursday. ICU agrees.
+# ISO does not really apply to the Shire calendar. This method is
+# algorithmically the same as the DateTime method, which amounts to
+# taking the first week of the year to be the first week containing a
+# Hevensday. We return nothing (undef in scalar context) on a holiday
+# because zero is a valid return (e.g. for 1 Rethe). -- TRW
+sub week_of_month {
+    my ( $self ) = @_;
+    $self->month()
+	or return;
+    my $hev  = $self->day() + 4 - $self->day_of_week();
+    return POSIX::floor( ( $hev + 6 ) / 7 );
+}
+
 sub strftime {
     my ( $self, @fmt ) = @_;
 
@@ -885,12 +910,6 @@ sub __fmt_shire_day {
 *__fmt_shire_zone_name	= \&time_zone_short_name;	# sub __fmt_shire_zone_name;
 *__fmt_shire_accented = \&accented;		# sub __fmt_shire_accented;
 *__fmt_shire_traditional = \&traditional;	# sub __fmt_shire_traditional
-
-# TODO this really ought to change.
-# The following work PROVIDED the DateTime implementation uses only the
-# public interface:
-*weekday_of_month = \&DateTime::weekday_of_month;	# sub weekday_of_month;
-*week_of_month = \&DateTime::week_of_month;	# sub week_of_month;
 
 # sub day_of_month_0; sub day_0; sub mday_0;
 # sub day_of_year_0; sub doy_0;
@@ -1296,6 +1315,16 @@ week: Midyear's day and the Overlithe.
 
 Returns a two element array, where the first is the week_year and the
 latter is the week_number.
+
+=head3 weekday_of_month
+
+Same as L<DateTime|DateTime>, but returns C<0> for a holiday.
+
+=head3 week_of_month
+
+Same as L<DateTime|DateTime>, but returns nothing (C<undef> in scalar
+context) for a holiday. The return for a holiday can not be C<0>,
+because this is a valid return, e.g. for 1 Rethe.
 
 =head3 epoch
 
