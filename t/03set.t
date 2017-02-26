@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 16;
+use Test::More tests => 17;
 use DateTime;
 use DateTime::Fiction::JRRTolkien::Shire;
 
@@ -11,7 +11,7 @@ my $shire = DateTime::Fiction::JRRTolkien::Shire->new(year => 1419,
 						      day => 25,
 						      hour => 10);
 
-# 1-7
+# 1-8
 $shire->set(day => 28);
 is($shire->day, 28);
 is( $shire->day_of_week(), 5 );
@@ -25,8 +25,9 @@ $shire->set_holiday( 'Overlithe' );
 is($shire->holiday, 4);
 $shire->set(month => 2);
 is($shire->month, 2);
+cmp_ok( $shire->hour(), '==', 10, 'Ensure hour preserved so far' ); 
 
-# 8-15
+# 9-16
 $shire->truncate(to => 'day');
 is($shire->hour, 0);
 $shire->truncate(to => 'month');
@@ -40,5 +41,5 @@ $shire->truncate(to => 'year');
 is($shire->holiday, 1);
 is($shire->year, 1420);
 
-# 16
+# 17
 ok($shire->set_time_zone('floating'));

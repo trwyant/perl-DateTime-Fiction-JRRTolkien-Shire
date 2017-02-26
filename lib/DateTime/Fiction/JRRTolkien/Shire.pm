@@ -60,6 +60,17 @@ sub _recalc_DateTime {
     ( $dt_args{year}, $dt_args{day_of_year} ) = __rata_die_to_year_day(
 	$shire_rd - GREGORIAN_RATA_DIE_TO_SHIRE );
 
+    # We may be calling this because we have fiddled with the Shire date
+    # and need to preserve stuff that is maintained by the embedded
+    # DateTime object. So if we actually have said object, preserve
+    # everything not explicitly specified.
+    if ( $self->{dt} ) {
+	foreach my $name ( @delegate_to_dt ) {
+	    defined $dt_args{$name}
+		or $dt_args{$name} = $self->{dt}->$name();
+	}
+    }
+
     $self->{dt} = DateTime->from_day_of_year( %dt_args );
 
     return;
