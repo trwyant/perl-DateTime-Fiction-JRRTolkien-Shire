@@ -897,7 +897,6 @@ sub on_date {
 # sub epoch; sub hires_epoch; sub utc_rd_values; sub utc_rd_as_seconds;
 # sub set_formatter; sub offset; sub locale; sub set_locale;
 # sub mjd; sub jd;
-# sub compare; sub compare_ignore_floating;
 foreach my $method ( qw{
     hour minute min second sec nanosecond
     hour_1 hour_12 hour_12_0
@@ -906,13 +905,27 @@ foreach my $method ( qw{
     epoch hires_epoch utc_rd_values utc_rd_as_seconds
     set_formatter offset locale set_locale
     mjd jd
-    compare compare_ignore_floating
 } ) {
     no strict qw{ refs };
     *$method = sub {
 	my ( $self, @arg ) = @_;
 	return $self->{dt}->$method( @arg )
     };
+}
+
+# These assume the corresponding DateTime routines only use the public
+# interface. The last time I assumed that, second thoughts made me
+# re-implement. We'll see how long this code stands.
+sub compare {
+    ref $_[0]
+	or shift @_;
+    return DateTime->compare( @_ );
+}
+
+sub compare_ignore_floating {
+    ref $_[0]
+	or shift @_;
+    return DateTime->compare_ignore_floating( @_ );
 }
 
 # Date::Tolkien::Shire::Data::__format() interface.
