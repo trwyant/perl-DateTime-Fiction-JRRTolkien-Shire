@@ -55,6 +55,8 @@ sub _recalc_DateTime {
 	),
     );
 
+    # Because the leap year algorithm is the same in both calendars, I
+    # can use __rata_die_to_year_day() on the Gregorian Rata Die day.
     ( $dt_args{year}, $dt_args{day_of_year} ) = __rata_die_to_year_day(
 	$shire_rd - GREGORIAN_RATA_DIE_TO_SHIRE );
 
@@ -68,8 +70,6 @@ sub _recalc_Shire {
 
     my $greg_rd = ( $self->utc_rd_values() )[0];
 
-    # Because the leap year algorithm is the same in both calendars, I
-    # can use __rata_die_to_year_day() on the Gregorian Rata Die day.
     my ( $year, $day_of_year ) = __rata_die_to_year_day(
 	$greg_rd + GREGORIAN_RATA_DIE_TO_SHIRE );
 
@@ -837,9 +837,24 @@ sub strftime {
 }
 
 # Comparison overloads come with DateTime.  Stringify will be our own
-use overload('<=>', \&_compare);
-use overload('cmp', \&_compare);
-use overload('""'  => \&_stringify);
+use overload
+    '<=>'	=> \&_overload_space_ship,
+    'cmp'	=> \&_overload_cmp,
+    '""'	=> \&_stringify,
+    ;
+
+sub _overload_space_ship {
+    defined $_[1]
+	or return undef;	## no critic (ProhibitExplicitReturnUndef)
+    return $_[2] ? - $_[0]->compare( $_[1] ) : $_[0]->compare( $_[1] );
+}
+
+sub _overload_cmp {
+    local $@ = undef;
+    eval { $_[1]->can( 'utc_rd_values' ) }
+	and goto &_overload_space_ship;
+    return ( "$_[0]" cmp "$_[1]" ) * ( $_[2] ? -1 : 1 );
+}
 
 sub _check_date {
     my ( $arg ) = @_;
@@ -853,8 +868,6 @@ sub _check_date {
 
     return;
 }
-
-sub _compare { return $_[0]->{dt} <=> $_[1]->{dt}; }
 
 sub _stringify {
     splice @_, 1, $#_, '%Ex';
@@ -873,6 +886,7 @@ sub on_date {
 # sub epoch; sub hires_epoch; sub utc_rd_values; sub utc_rd_as_seconds;
 # sub set_formatter; sub offset; sub locale; sub set_locale;
 # sub mjd; sub jd;
+# sub compare; sub compare_ignore_floating;
 foreach my $method ( qw{
     hour minute min second sec nanosecond
     hour_1 hour_12 hour_12_0
@@ -881,6 +895,7 @@ foreach my $method ( qw{
     epoch hires_epoch utc_rd_values utc_rd_as_seconds
     set_formatter offset locale set_locale
     mjd jd
+    compare compare_ignore_floating
 } ) {
     no strict qw{ refs };
     *$method = sub {
