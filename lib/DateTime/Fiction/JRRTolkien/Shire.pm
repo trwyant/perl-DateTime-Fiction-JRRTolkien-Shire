@@ -342,16 +342,13 @@ sub year {
     return $self->{year};
 } # end sub year
 
-*year_number	= \&year;	# sub year_number
-
 sub month {
     my $self = shift;
     $self->_recalc_Shire if $self->{recalc};
     return $self->{month};
 } # end sub month
 
-*mon = \&month;			# sub mon;
-*month_number = \&month;	# sub month_number;
+*mon = \&month;		# sub mon;
 
 sub month_name {
     my ( $self ) = @_;
@@ -371,7 +368,6 @@ sub day_of_month {
 
 *day = \&day_of_month;		# sub day
 *mday = \&day_of_month;		# sub mday
-*day_number = \&day_of_month;	# sub day_number
 
 sub day_of_week {
     my $self = shift;
@@ -381,7 +377,6 @@ sub day_of_week {
 
 *wday  = \&day_of_week;			# sub wday
 *dow  = \&day_of_week;			# sub dow
-*weekday_number = \&day_of_week;	# sub weekday_number
 
 sub day_name {
     my ( $self ) = @_;
@@ -408,8 +403,6 @@ sub holiday {
     $self->_recalc_Shire if $self->{recalc};
     return $self->{holiday};
 }
-
-*holiday_number	= \&holiday;	# sub holiday_number;
 
 sub holiday_name {
     my ( $self ) = @_;
@@ -565,11 +558,8 @@ sub hms {
 
 sub iso8601 { return join 'S', map { $_[0]->$_() } qw{ ymd hms } }
 
-# sub accented; sub traditional;
-foreach my $name ( qw{ accented traditional } ) {
-    no strict qw{ refs };
-    *$name = sub { return $_[0]->{$name} };
-}
+sub accented { return $_[0]->{accented} }
+sub traditional { return $_[0]->{traditional} }
 
 *datetime = \&iso8601;		# sub datetime;
 
@@ -874,6 +864,29 @@ foreach my $method ( qw{
     };
 }
 
+# Date::Tolkien::Shire::Data::__format() interface.
+
+*__fmt_shire_year	= \&year;	# sub __fmt_shire_year
+*__fmt_shire_month	= \&month;	# sub __fmt_shire_month;
+
+sub __fmt_shire_day {
+    my ( $self ) = @_;
+    $self->_recalc_Shire if $self->{recalc};
+    return $self->{day} || $self->{holiday};
+}
+
+*__fmt_shire_day_of_week = \&day_of_week;	# sub __fmt_shire_day_of_week
+*__fmt_shire_hour	= \&hour;	# sub __fmt_shire_hour;
+*__fmt_shire_minute	= \&minute;	# sub __fmt_shire_minute;
+*__fmt_shire_second	= \&second;	# sub __fmt_shire_second;
+*__fmt_shire_nanosecond	= \&nanosecond;	# sub __fmt_shire_nanosecond;
+*__fmt_shire_epoch	= \&epoch;	# sub __fmt_shire_epoch;
+*__fmt_shire_zone_offset	= \&offset;	# sub __fmt_shire_zone_offset;
+*__fmt_shire_zone_name	= \&time_zone_short_name;	# sub __fmt_shire_zone_name;
+*__fmt_shire_accented = \&accented;		# sub __fmt_shire_accented;
+*__fmt_shire_traditional = \&traditional;	# sub __fmt_shire_traditional
+
+# TODO this really ought to change.
 # The following work PROVIDED the DateTime implementation uses only the
 # public interface:
 *weekday_of_month = \&DateTime::weekday_of_month;	# sub weekday_of_month;
@@ -1125,10 +1138,6 @@ Returns C<'Shire'>.
 
 Returns the year.
 
-=head3 year_number
-
-Synonym for L<year()|/year>.
-
 =head3 month
 
     print 'Month: ', $dts->month(), "\n";
@@ -1137,10 +1146,6 @@ Returns the month number, from 1 to 12.  If the date is a holiday, a 0
 is returned for the month.
 
 =head3 mon
-
-Synonym for L<month()|/month>.
-
-=head3 month_number
 
 Synonym for L<month()|/month>.
 
@@ -1162,10 +1167,6 @@ holiday, 0 is returned.
 
 Synonym for L<day_of_month()|/day_of_month>.
 
-=head3 day_number
-
-Synonym for L<day_of_month()|/day_of_month>.
-
 =head3 mday
 
 Synonym for L<day_of_month()|/day_of_month>.
@@ -1182,10 +1183,6 @@ any week (Midyear's Day or the Overlithe), 0 is returned.
 Synonym for L<day_of_week|/day_of_week>.
 
 =head3 dow
-
-Synonym for L<day_of_week|/day_of_week>.
-
-=head3 weekday_number
 
 Synonym for L<day_of_week|/day_of_week>.
 
@@ -1243,10 +1240,6 @@ Synonym for L<day_of_year()|/day_of_year>.
 
 Returns the holiday number (given in the description of the
 L<new()|/new> constructor).  If the day is not a holiday, 0 is returned.
-
-=head3 holiday_number
-
-Synonym for L<holiday()|/holiday>.
 
 =head3 holiday_name
 
