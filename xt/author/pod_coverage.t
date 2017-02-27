@@ -37,6 +37,8 @@ eod
 	    trustme	=> [
 		qr{ \A (?: doq | min | sec ) \z }smx,
 		qr{ _0 \z }smx,
+		qr{ \A utc_year \z }smx,
+		qr{ \A local_rd_as_seconds \z }smx,
 	    ],
 	    coverage_class => 'Pod::Coverage::CountParents'
 	});

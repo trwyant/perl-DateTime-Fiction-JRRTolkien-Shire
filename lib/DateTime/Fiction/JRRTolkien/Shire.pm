@@ -377,8 +377,8 @@ sub day_of_month {
     return $self->{day};
 } # end sub day_of_month
 
-*day = \&day_of_month;		# sub day
-*mday = \&day_of_month;		# sub mday
+*day = \&day_of_month;		# sub day;
+*mday = \&day_of_month;		# sub mday;
 
 sub day_of_week {
     my $self = shift;
@@ -386,8 +386,9 @@ sub day_of_week {
     return $self->{wday};
 } # end sub day_of_week
 
-*wday  = \&day_of_week;			# sub wday
-*dow  = \&day_of_week;			# sub dow
+*wday  = \&day_of_week;			# sub wday;
+*dow  = \&day_of_week;			# sub dow;
+*local_day_of_week = \&day_of_week;	# sub local_day_of_week;
 
 sub day_name {
     my ( $self ) = @_;
@@ -897,6 +898,9 @@ sub on_date {
 # sub epoch; sub hires_epoch; sub utc_rd_values; sub utc_rd_as_seconds;
 # sub set_formatter; sub offset; sub locale; sub set_locale;
 # sub mjd; sub jd;
+# sub is_dst; sub is_finite; sub is_infinite; sub leap_seconds;
+# sub formatter; sub utc_year;
+# sub local_rd_as_seconds; sub local_rd_values;
 foreach my $method ( qw{
     hour minute min second sec nanosecond
     hour_1 hour_12 hour_12_0
@@ -905,6 +909,9 @@ foreach my $method ( qw{
     epoch hires_epoch utc_rd_values utc_rd_as_seconds
     set_formatter offset locale set_locale
     mjd jd
+    is_dst is_finite is_infinite leap_seconds
+    formatter utc_year
+    local_rd_as_seconds local_rd_values
 } ) {
     no strict qw{ refs };
     *$method = sub {
@@ -913,9 +920,13 @@ foreach my $method ( qw{
     };
 }
 
+*DefaultLocale = \&DateTime::DefaultLocale;
+
 # These assume the corresponding DateTime routines only use the public
 # interface. The last time I assumed that, second thoughts made me
-# re-implement. We'll see how long this code stands.
+# re-implement. We'll see how long this code stands. Though it may stand
+# for a while, since the documentation also says that all that is needed
+# is a utc_rd_values() method, which we have.
 sub compare {
     ref $_[0]
 	or shift @_;
