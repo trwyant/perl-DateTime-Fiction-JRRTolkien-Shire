@@ -939,6 +939,29 @@ sub compare_ignore_floating {
     return DateTime->compare_ignore_floating( @_ );
 }
 
+# NOTE: I do not feel the need to load Storable, because if these are
+# being called it has already been loaded. Either that or somebody is
+# mucking around in the internals, in which case they are on their own.
+sub STORABLE_freeze {
+    my ( $self ) = @_;
+    return Storable::freeze(
+	{
+	    accented	=> $self->{accented},
+	    traditional	=> $self->{traditional},
+	},
+    ),
+    $self->{dt},
+};
+
+sub STORABLE_thaw {
+    my ( $self, undef, $serialized, $dt ) = @_;
+    my $info = Storable::thaw( $serialized );
+    @{ $self }{ keys %{ $info } } = values %{ $info };
+    $self->{dt} = $dt;
+    $self->{recalc} = 1;
+    return $self;
+}
+
 # Date::Tolkien::Shire::Data::__format() interface.
 
 *__fmt_shire_year	= \&year;	# sub __fmt_shire_year

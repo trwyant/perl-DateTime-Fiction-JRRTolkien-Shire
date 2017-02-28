@@ -24,7 +24,8 @@ eod
     # explicitly because we want to tinker with its inheritance.
     require DateTime::Fiction::JRRTolkien::Shire;
 
-    # This hack causes all DateTime methods to be considered documented.
+    # This hack causes all methods documented by DateTime to be
+    # considered documented by DateTime::Fiction::JRRTolkien::Shire.
     # Wish there was a cleaner way.
     local @DateTime::Fiction::JRRTolkien::Shire::ISA = qw{ DateTime };
 
@@ -39,6 +40,7 @@ eod
 		qr{ _0 \z }smx,
 		qr{ \A utc_year \z }smx,
 		qr{ \A local_rd_as_seconds \z }smx,
+		qr{ \A STORABLE_ }smx,	# Storable interface
 	    ],
 	    coverage_class => 'Pod::Coverage::CountParents'
 	});
