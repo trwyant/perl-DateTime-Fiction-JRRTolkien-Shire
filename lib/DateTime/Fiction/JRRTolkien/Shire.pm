@@ -340,6 +340,15 @@ sub last_day_of_month {
     }
 }
 
+sub now_local {
+    my ( $class, %arg ) = @_;
+    my %dt_arg;
+    @dt_arg{ qw< second minute hour day month year > } = localtime;
+    $dt_arg{month} += 1;
+    $dt_arg{year}  += 1900;
+    return $class->from_object( %arg, object => DateTime->new( %dt_arg ) );
+}
+
 sub calendar_name {
     return 'Shire';
 }
@@ -1164,6 +1173,17 @@ Same as in DateTime, but you can also specify parameters C<accented> and
 C<traditional> (see L<new()|/new>).  Note that this is equivalent to
 
     from_epoch( epoch => time() );
+
+and produces an object whose time zone is C<UTC>.
+
+=head3 now_local
+
+    $dts = DateTime::Fiction::JRRTolkien::Shire->now_local( ... );
+
+This static method creates a new object set to the current local time.
+Under the hood it just calls the C<localtime()> built-in, and then calls
+L<new()|/new> with the results. Unlike L<now()|/now>, this method
+produces an object whose zone is C<floating>.
 
 =head3 today
 
