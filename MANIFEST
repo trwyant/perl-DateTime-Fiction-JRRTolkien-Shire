@@ -1,4 +1,6 @@
 Changes
+eg/README
+eg/date-convert
 lib/DateTime/Fiction/JRRTolkien/Shire.pm
 lib/DateTime/Fiction/JRRTolkien/Shire/Types.pm
 LICENSES/Artistic
