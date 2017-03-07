@@ -1094,15 +1094,34 @@ holiday, Overlithe, is added on leap years.  The holiday Midyear's Day
 (and the Overlithe on a leap year) is not part of any week, which means
 that the year always starts on Sterday.
 
-This module is a follow on to the Date::Tolkien::Shire module, and is
-rewritten to support Dave Rolsky and company's DateTime module.  The
-DateTime module must be installed for this module to work.  Unlike the
-DateTime module, which includes time support, this calendar does not
-have any mechanisms for giving a shire time (mostly because I've never
-quite figured out what it should look like).  Time is maintained,
-however, so that objects can be converted from other calendars to the
-shire calendar and then converted back without their time components
-being lost.  The same is true of time zones.
+This module is a follow-on to the
+L<Date::Tolkien::Shire|Date::Tolkien::Shire> module, and is rewritten to
+support Dave Rolsky and company's L<DateTime|DateTime> module. The
+DateTime module must be installed for this module to work.
+
+This module provides support for most L<DateTime|DateTime>
+functionality, with the known exceptions of arithmetic and
+C<format_cldr()>. Both may be added later.
+
+Support for L<strftime()|/strftime> comes from
+L<Date::Tolkien::Shire::Data|Date::Tolkien::Shire::Data>, and you should
+see the documentation for that module for the details of the formatting
+codes.
+
+Some assumptions have had to be made on how the
+hobbits represent time. We have references to (e.g.) "nine o'clock" (in
+the morning), which seem to imply they start the day at midnight. But
+there appears to be nothing to say whether they used a 12- or 24-hour
+clock. Default time formats (say, '%X') use a 12-hour clock because that
+is the English system and Tolkien did not specify anything to the
+contrary.
+
+Calendar quarters are not mentioned at all in any of Tolkien's writings
+(that I can find -- Wyant), but are part of the L<DateTime|DateTime>
+interface. This package implements a quarter as being exactly 13 weeks,
+with Midyear's day and Overlithe not being part of any quarter, on no
+better justification than that the present author thinks that is
+consistent with the Shire's approach to horology.
 
 =head1 METHODS
 
