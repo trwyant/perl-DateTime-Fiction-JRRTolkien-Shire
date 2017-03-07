@@ -1,3 +1,15 @@
+0.899_01	2017-03-07	T. R. Wyant
+    Conform to the full DateTime interface, with the known exceptions of
+    date and duration arithmetic and format_cldr().
+
+    Add instantiator now_local(), which is a convenience method based on
+    the data returned by the localtime() built-in. It differs from now()
+    in that the zone is floating, not UTC,
+
+    Add argument validation via Params::Validate.
+
+    Use Date::Tolkien::Shire::Data as back end.
+
 0.22		2017-02-15	T. R. Wyant
     Add tools/ directory. At the moment this contains:
     - A copy of DateTime::Fiction::JRRTolkien::Shire version 0.02 (the
