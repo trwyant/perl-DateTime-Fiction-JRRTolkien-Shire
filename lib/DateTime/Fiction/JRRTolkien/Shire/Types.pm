@@ -36,6 +36,42 @@ declare(
     },
 );
 
+=begin comment
+
+object_isa_type(
+    Duration	=>
+    class	=> 'DateTime::Fiction::JRRTolkien::Shire::Duration',
+#    class	=> 'DateTime::Duration',
+);
+
+=end comment
+
+=cut
+
+# For some reason the above does not compile, though if you specify
+# 'DateTime::Duration' it does. I believe the following to be
+# equivalent, though I am sure it will produce a less-salubrious error
+# message.
+
+declare(
+    Duration	=>
+    parent	=> t( 'Object' ),
+    inline	=> sub {
+	$_[0]->parent->inline_check( $_[1] ) .
+	" && $_[1]->isa( 'DateTime::Fiction::JRRTolkien::Shire::Duration' )";
+    },
+);
+
+enum(
+    EndOfMonthMode	=>
+    values	=> [ qw{ limit preserve wrap } ],
+);
+
+any_can_type(
+    Formatter	=>
+    methods	=> [ qw{ format_datetime } ],
+);
+
 declare(
     HolidayName	=>
     parent	=> t( 'NonEmptySimpleStr' ),
@@ -69,12 +105,16 @@ declare(
     },
 );
 
+union(
+    IntOrUndef	=>
+    of	=> [ map { t( $_ ) } qw{ Int Undef } ],
+);
+
 
 declare(
-    'LocaleObject',
-    parent => t('Object'),
-    inline => sub {
-
+    LocaleObject	=>
+    parent	=> t( 'Object' ),
+    inline	=> sub {
         # Can't use $_[1] directly because 5.8 gives very weird errors
         my $var = $_[1];
         <<"EOF";
@@ -87,7 +127,7 @@ EOF
 );
 
 union(
-    'Locale',
+    Locale	=>
     of => [ map { t( $_ ) } qw{ NonEmptySimpleStr LocaleObject } ],
 );
 
@@ -175,11 +215,6 @@ enum(
 declare(
     Year	=>
     parent	=> t( 'Int' ),
-);
-
-any_can_type(
-    'Formatter',
-    methods => ['format_datetime'],
 );
 
 1;

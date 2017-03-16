@@ -19,11 +19,13 @@ use Date::Tolkien::Shire::Data qw{
     __quarter __quarter_name __quarter_abbr
     __rata_die_to_year_day
     __trad_weekday_name __trad_weekday_abbr
+    __week_of_year
     __weekday_name __weekday_abbr
     __year_day_to_rata_die
     GREGORIAN_RATA_DIE_TO_SHIRE
 };
 use DateTime 0.14;
+use DateTime::Fiction::JRRTolkien::Shire::Duration;
 use DateTime::Fiction::JRRTolkien::Shire::Types ();
 use Params::ValidationCompiler ();
 
@@ -461,6 +463,7 @@ sub week { return ($_[0]->week_year, $_[0]->week_number); }
 
 sub week_number {
     my $self = shift;
+    # TODO re-implement in terms of __week_of_year
     my $yday = $self->day_of_year;
 
     DAY_NUMBER_MIDYEARS_DAY == $yday
@@ -857,6 +860,214 @@ sub strftime {
 	__format( $self, $fmt[0] );
 }
 
+# Arithmetic
+
+sub duration_class {
+    return 'DateTime::Fiction::JRRTolkien::Shire::Duration';
+}
+
+sub _make_duration {
+    my ( $self, @arg ) = @_;
+
+    1 == @arg
+	and _isa( $arg[0], $self->duration_class() )
+	and return $arg[0];
+
+    return $self->duration_class()->new( @arg );
+}
+
+sub add {
+    my ( $self, @arg ) = @_;
+    return $self->add_duration( $self->_make_duration( @arg ) );
+}
+
+{
+    my $validate = Params::ValidationCompiler::validation_for(
+        name             => '_check_add_duration_params',
+        name_is_optional => 1,
+        params           => [
+            { type => __t( 'Duration' ) },
+        ],
+    );
+
+    sub add_duration {
+	my ( $self, @arg ) = @_;
+	my ( $dur ) = $validate->( @arg );
+	return $self->_add_duration( $dur );
+    }
+
+    sub subtract_duration {
+	my ( $self, @arg ) = @_;
+	my ( $dur ) = $validate->( @arg );
+	return $self->_add_duration( $dur->inverse() );
+    }
+}
+
+{
+    # The _offset arrays are accessed by
+    # @xx_offset[$self->is_leap_year][$forward][$holiday];
+    my @month_offset = (
+	[	# Not a leap year
+	    [ 0, -2, -1, -2,  0, -3, -1 ],	# Going backward
+	    [ 0,  1,  3,  2,  0,  1,  2 ],	# Going forward
+	],
+	[	# A leap year
+	    [ 0, -2, -1, -2, -3, -4, -1 ],	# Going backward
+	    [ 0,  1,  4,  3,  2,  1,  2 ],	# Going forward
+	],
+    );
+    my @week_offset = (	# Note that we only use indices 3 & 4
+	[	# Not a leap year
+	    [ 0, 0, 0, -1,  0, 0, 0 ],	# Going backward
+	    [ 0, 0, 0,  1,  0, 0, 0 ],	# Going forward
+	],
+	[	# A leap year
+	    [ 0, 0, 0, -1, -2, 0, 0 ],	# Going backward
+	    [ 0, 0, 0,  2,  1, 0, 0 ],	# Going forward
+	],
+    );
+
+    sub _add_duration {
+	my ( $self, $dur ) = @_;
+
+        # simple optimization (cribbed shamelessly from DateTime)
+	$dur->is_zero()
+	    and return $self;
+
+        my %delta = $dur->deltas();
+
+	# This bit isn't quite right since DateTime::Infinite::Future -
+	# infinite duration should NaN (cribbed shamelessly from
+	# DateTime)
+        foreach my $val ( values %delta ) {
+            my $inf;
+            if ( $val == DateTime->INFINITY ) {
+                $inf = DateTime::Infinite::Future->new;
+            }
+            elsif ( $val == DateTime->NEG_INFINITY ) {
+                $inf = DateTime::Infinite::Past->new;
+            }
+
+            if ($inf) {
+                %$self = %$inf;
+                bless $self, ref $inf;
+
+                return $self;
+            }
+        }
+
+	$self->is_infinite()
+	    and return $self;
+
+	if ( $delta{years} || $delta{months} || $delta{weeks} ) {
+
+	    my $forward = $dur->is_forward_mode();
+	    my $holiday = $self->holiday();
+	    my $leap = $self->is_leap_year();
+	    my $orig_rd = my $shire_rd = ( $self->utc_rd_values() )[0] +
+		GREGORIAN_RATA_DIE_TO_SHIRE;
+
+	    if ( my $months = delete $delta{months} ) {
+		$shire_rd +=
+		    $month_offset[$leap][$forward][$holiday];
+		$holiday = 0;	# No further adjustment needed
+		my ( $year, $day_of_year ) = __rata_die_to_year_day(
+		    $shire_rd );
+		my ( $month, $day ) = __day_of_year_to_date( $year,
+		    $day_of_year );
+		$month += $months - 1;	# now zero-based
+		$year += POSIX::floor( $month / 12 );
+		$leap = __is_leap_year( $year );
+		$month = 1 + $month % 12;	# now one-based again
+		$day_of_year = __date_to_day_of_year( $year, $month,
+		    $day );
+		$shire_rd = __year_day_to_rata_die( $year, $day_of_year );
+	    }
+
+	    if ( my $weeks = delete $delta{weeks} ) {
+		$shire_rd += $week_offset[$leap][$forward][$holiday];
+		my ( $year, $day_of_year ) = __rata_die_to_year_day(
+		    $shire_rd );
+		my ( $month, $day ) = __day_of_year_to_date( $year,
+		    $day_of_year );
+		my $week = __week_of_year( $month, $day );
+		my $day_of_week = __day_of_week( $month, $day );
+		$week += $weeks - 1;	# now zero-based
+		$year += POSIX::floor( $week / 52 );
+		$leap = __is_leap_year( $year );
+		$week = $week % 52;
+		$day_of_year = $week * 7 + $day_of_week;
+		$week > 25	# Still zero-based, remember
+		    and $day_of_year += $leap + 1;
+		$shire_rd = __year_day_to_rata_die( $year, $day_of_year );
+	    }
+
+	    if ( my $years = delete $delta{years} ) {
+		my ( $year, $day_of_year ) = __rata_die_to_year_day(
+		    $shire_rd );
+		my ( $month, $day ) = __day_of_year_to_date( $year,
+		    $day_of_year );
+		my $y = $year + $years;
+		my $l = __is_leap_year( $y );
+		# If we're leap year day and the new year is not a leap
+		# year we have to adjust.
+		if ( ! $l && ! $month && $day == 4 ) {
+		    $day += $forward ? 1 : -1;
+		}
+		$day_of_year = __date_to_day_of_year( $y, $month, $day);
+		$shire_rd = __year_day_to_rata_die( $y, $day_of_year );
+		$leap = $l;
+		$holiday = $month ? 0 : $day;
+	    }
+
+	    $delta{days} += $shire_rd - $orig_rd;
+	}
+
+	if ( grep { $delta{$_} } qw{ days minutes seconds nanoseconds }
+	    ) {
+	    $self->{dt}->add( %delta );
+	    $self->{recalc} = 1;
+	}
+
+        return $self;
+    }
+}
+
+sub subtract {
+    my ( $self, @arg ) = @_;
+    return $self->subtract_duration( $self->_make_duration( @arg ) );
+}
+
+sub subtract_datetime {
+    my ( $left, $right ) = @_;
+    _isa( $right, __PACKAGE__ )
+	or Carp::croak( 'Operand must be a ', __PACKAGE__ );
+    my %delta = $left->{dt}->subtract_datetime( $right->{dt}
+    )->deltas();
+    $delta{years} = $left->year() - $right->year();
+    if ( $left->month() && $right->month() ) {
+	$delta{months} = $left->month() - $right->month();
+	$delta{days} = $left->day() - $right->day();
+    } else {
+	$delta{days} = $left->day_of_year() - $right->day_of_year();
+    }
+    return $left->duration_class()->new( %delta );
+}
+
+foreach my $method ( qw{ subtract_datetime_absolute delta_days delta_md
+    delta_ms } ) {
+    no strict qw{ refs };
+    *$method = sub {
+	my ( $left, $right ) = @_;
+	_isa( $right, __PACKAGE__ )
+	    and $right = $right->{dt};
+	_isa( $right, 'DateTime' )
+	    or Carp::croak( 'Operand must be a DateTime or a ', __PACKAGE__ );
+	return $left->duration_class()->new(
+	    $left->{dt}->$method( $right )->deltas() );
+    };
+}
+
 # Comparison overloads come with DateTime.  Stringify will be our own
 use overload
     '<=>'	=> \&_overload_space_ship,
@@ -1015,6 +1226,8 @@ sub _croak {
     Carp::croak( __PACKAGE__ . ": @msg" );
 }
 
+sub _isa { return Scalar::Util::blessed( $_[0] ) && $_[0]->isa( $_[1] ) }
+
 1;
 
 __END__
@@ -1100,8 +1313,8 @@ support Dave Rolsky and company's L<DateTime|DateTime> module. The
 DateTime module must be installed for this module to work.
 
 This module provides support for most L<DateTime|DateTime>
-functionality, with the known exceptions of arithmetic and
-C<format_cldr()>. Both may be added later.
+functionality, with the known exception of C<format_cldr()>, which may
+be added later.
 
 Support for L<strftime()|/strftime> comes from
 L<Date::Tolkien::Shire::Data|Date::Tolkien::Shire::Data>, and you should
@@ -1632,15 +1845,69 @@ All comparison operators should work, just as in DateTime.  In addition,
 all C<DateTime::Fiction::JRRTolkien::Shire> objects will interpolate
 into a string representing the date when used in a double-quoted string.
 
-=head1 DURATIONS AND DATE MATH
+=head2 Durations and Date Math
 
-Durations and date math (other than comparisons) are not supported at
-present on this module (patches are always welcome).  If this is needed,
-there are a couple of options.  If working with dates within epoch time,
-the dates can be converted to epoch time, the math done, and then
-converted back.  Regardless of the dates, the shire objects can also be
-converted to DateTime objects, the math done with the DateTime class,
-and then the DateTime object converted back to a Shire object.
+Durations and date math are supported as of [%% next_version %%].
+Because of the peculiarities of the Shire calendar, the relevant
+duration object is
+L<DateTime::Fiction::JRRTolkien::Shire::Duration|DateTime::Fiction::JRRTolkien::Shire::Duration>,
+which is B<not> a subclass of L<DateTime::Duration|DateTime::Duration>.
+
+The date portion of the math is done in the order L<month>, L<week>,
+L<year>, L<day>. Before adding (or subtracting) months or weeks from a
+date that is not part of any month (or week), that date will be adjusted
+forward or backward to the nearest date that is part of a month (or
+week). The direction of adjustment is specified by the
+L<DateTime::Fiction::JRRTolkien::Shire::Duration|DateTime::Fiction::JRRTolkien::Shire::Duration>
+object; see its documentation for the details. The order of operation
+was chosen to ensure that only one such adjustment would be necessary
+for any computation.
+
+=head3 add
+
+This convenience method takes as arguments either a
+L<DateTime::Fiction::JRRTolkien::Shire::Duration|DateTime::Fiction::JRRTolkien::Shire::Duration>
+object or the arguments needed to manufacture one. The duration is then
+passed to L<add_duration()|/add_duration>.
+
+=head3 add_duration
+
+This method takes as its argument a
+L<DateTime::Fiction::JRRTolkien::Shire::Duration|DateTime::Fiction::JRRTolkien::Shire::Duration>
+object. This is added to the invocant (i.e. it is a mutator). The
+invocant is returned.
+
+=head3 subtract
+
+This convenience method takes as arguments either a
+L<DateTime::Fiction::JRRTolkien::Shire::Duration|DateTime::Fiction::JRRTolkien::Shire::Duration>
+object or the arguments needed to manufacture one. The duration is then
+passed to L<subtract_duration()|/subtract_duration>.
+
+=head3 subtract_duration
+
+This convenience method takes as its argument a
+L<DateTime::Fiction::JRRTolkien::Shire::Duration|DateTime::Fiction::JRRTolkien::Shire::Duration>
+object. The inverse of this object is then passed to
+L<add_duration()|/add_duration>.
+
+=head3 subtract_datetime
+
+This takes as its argument a
+L<DateTime::Fiction::JRRTolkien::Shire|DateTime::Fiction::JRRTolkien::Shire>
+object. The return is a
+L<DateTime::Fiction::JRRTolkien::Shire::Duration|DateTime::Fiction::JRRTolkien::Shire::Duration>
+object representing the difference between the two objects. If either
+the invocant or the argument represents a holiday, the date portion of
+this difference will contain C<years> and C<days>. Otherwise it will
+contain C<years>, C<months> and C<days>.
+
+=head3 subtract_datetime_absolute, delta_days, delta_md, delta_ms
+
+These are just delegated to the corresponding L<DateTime|DateTime>
+method.  The argument can be either a
+L<DateTime::Fiction::JRRTolkien::Shire|DateTime::Fiction::JRRTolkien::Shire>
+object or a L<DateTime|DateTime> object.
 
 =head1 NOTE: YEAR CALCULATION
 
@@ -1658,7 +1925,7 @@ calendar are every 4 years unless it is the turn of the century, in which
 case it is not a leap year. Our calendar (Gregorian) uses every 4 years
 unless it's 100 years unless its 400 years.  So, if no changes have been
 made to the hobbits' calendar since the end of the third age, their
-calendar would be about 15 days further behind ours now then when the
+calendar would be about 15 days further behind ours now than when the
 War of the Ring took place.  Implementing this seemed to me to go
 against Tolkien's general habit of converting dates in the novel to our
 equivalents to give us a better sense of time.  My thought, at least

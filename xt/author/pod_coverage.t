@@ -20,14 +20,18 @@ eod
 }
 
 {
-    # all_pod_coverage_ok() will load the module for us, but we load it
-    # explicitly because we want to tinker with its inheritance.
+    # all_pod_coverage_ok() will load the modules for us, but we load
+    # them explicitly because we want to tinker with their inheritance.
     require DateTime::Fiction::JRRTolkien::Shire;
+    require DateTime::Fiction::JRRTolkien::Shire::Duration;
 
     # This hack causes all methods documented by DateTime to be
     # considered documented by DateTime::Fiction::JRRTolkien::Shire.
     # Wish there was a cleaner way.
     local @DateTime::Fiction::JRRTolkien::Shire::ISA = qw{ DateTime };
+    # And ditto for DateTime::Fiction::JRRTolkien::Shire::Duration
+    local @DateTime::Fiction::JRRTolkien::Shire::Duration::ISA = qw{
+    DateTime::Duration };
 
     all_pod_coverage_ok ({
 	    also_private => [

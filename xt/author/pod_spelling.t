@@ -20,14 +20,18 @@ all_pod_files_spelling_ok ();
 
 1;
 __DATA__
+Afterlithe
 Braun
 dow
 doy
 durations
+Forelithe
+Hevensday
 Houghton
 iso
 mday
 merchantability
+Mersday
 Mifflin
 mon
 Overlithe
@@ -37,5 +41,7 @@ rata
 Specio
 Sterday
 th
+Trewsday
 wday
+Wedmath
 Wyant
