@@ -1,4 +1,4 @@
-0.899_01	2017-03-07	T. R. Wyant
+0.900		2017-03-16	T. R. Wyant
     Conform to the full DateTime interface, with the known exceptions of
     date and duration arithmetic and format_cldr().
 
