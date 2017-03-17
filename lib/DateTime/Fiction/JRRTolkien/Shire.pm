@@ -34,7 +34,7 @@ use Params::ValidationCompiler ();
 # namespace::autoclean.
 *__t = \&DateTime::Fiction::JRRTolkien::Shire::Types::t;
 
-our $VERSION = '0.900';
+our $VERSION = '0.900_01';
 
 use constant DAY_NUMBER_MIDYEARS_DAY	=> 183;
 
@@ -1847,7 +1847,7 @@ into a string representing the date when used in a double-quoted string.
 
 =head2 Durations and Date Math
 
-Durations and date math are supported as of [%% next_version %%].
+Durations and date math are supported as of 0.900_01.
 Because of the peculiarities of the Shire calendar, the relevant
 duration object is
 L<DateTime::Fiction::JRRTolkien::Shire::Duration|DateTime::Fiction::JRRTolkien::Shire::Duration>,

@@ -1,3 +1,9 @@
+0.900_01	2017-03-17	T. R. Wyant
+    Bring dependencies up to date.
+
+    Add date and duration arithmetic. This leaves format_cldr() as the
+    only known part of the DateTime interface not implemented.
+
 0.900		2017-03-16	T. R. Wyant
     Conform to the full DateTime interface, with the known exceptions of
     date and duration arithmetic and format_cldr().
