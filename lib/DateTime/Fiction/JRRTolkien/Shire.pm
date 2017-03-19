@@ -34,7 +34,7 @@ use Params::ValidationCompiler ();
 # namespace::autoclean.
 *__t = \&DateTime::Fiction::JRRTolkien::Shire::Types::t;
 
-our $VERSION = '0.900_01';
+our $VERSION = '0.900_02';
 
 use constant DAY_NUMBER_MIDYEARS_DAY	=> 183;
 

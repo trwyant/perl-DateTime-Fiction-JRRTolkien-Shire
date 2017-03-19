@@ -1,3 +1,8 @@
+0.900_02	2017-03-19	T. R. Wyant
+    Update dependency versions. The real issue was
+    Params::ValidationCompiler, but I did DateTime::Duration and
+    Date::Tolkien::Shire::Data as well.
+
 0.900_01	2017-03-17	T. R. Wyant
     Bring dependencies up to date.
 
