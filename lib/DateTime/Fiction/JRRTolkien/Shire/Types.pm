@@ -8,7 +8,7 @@ use warnings;
 use parent qw{ Specio::Exporter };
 
 use Carp;
-use Date::Tolkien::Shire::Data qw{
+use Date::Tolkien::Shire::Data 0.001 qw{
     __holiday_name_to_number
     __month_name_to_number
 };

@@ -6,7 +6,7 @@ use strict;
 use warnings;
 
 use Carp ();
-use Date::Tolkien::Shire::Data qw{
+use Date::Tolkien::Shire::Data 0.001 qw{
     __date_to_day_of_year
     __day_of_week
     __day_of_year_to_date
@@ -27,7 +27,7 @@ use Date::Tolkien::Shire::Data qw{
 use DateTime 0.14;
 use DateTime::Fiction::JRRTolkien::Shire::Duration;
 use DateTime::Fiction::JRRTolkien::Shire::Types ();
-use Params::ValidationCompiler ();
+use Params::ValidationCompiler 0.13 ();
 
 # This Conan The Barbarian-style import is because I am reluctant to use
 # any magic more subtle than I myself posess; to wit

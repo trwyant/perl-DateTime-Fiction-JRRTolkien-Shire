@@ -6,9 +6,9 @@ use strict;
 use warnings;
 
 use Carp ();
-use DateTime::Duration ();
+use DateTime::Duration 0.140 ();
 use DateTime::Fiction::JRRTolkien::Shire::Types ();
-use Params::ValidationCompiler ();
+use Params::ValidationCompiler 0.13 ();
 use Scalar::Util ();
 
 *__t = \&DateTime::Fiction::JRRTolkien::Shire::Types::t;
