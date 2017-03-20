@@ -16,7 +16,7 @@ my %opt = (
 );
 
 GetOptions( \%opt,
-    qw{ from=s instantiater=s reverse! serializer=s to=s },
+    qw{ from=s reverse! to=s },
     'instantiater=s'	=> \( my $instantiater = 'new' ),
     'serializer=s'	=> \( my $serializer ),
     help => sub { pod2usage( { -verbose => 2 } ) },
