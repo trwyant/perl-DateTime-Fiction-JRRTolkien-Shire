@@ -22,7 +22,7 @@ use overload
     'cmp'	=> '_compare_overload',
     ;
 
-our $VERSION = '0.900_02';
+our $VERSION = '0.900_03';
 
 {
 

@@ -1,3 +1,10 @@
+0.900_03	2017-03-21	T. R. Wyant
+    Use local rather than UTC Rata Die in date calculations. The
+    consequence of using UTC Rata Die was that that strftime() produced
+    universal dates but local times.
+
+    Specify required module versions in 'use()'.
+
 0.900_02	2017-03-19	T. R. Wyant
     Update dependency versions. The real issue was
     Params::ValidationCompiler, but I did DateTime::Duration and
