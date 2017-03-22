@@ -81,7 +81,7 @@ sub _recalc_DateTime {
 sub _recalc_Shire {
     my ( $self ) = @_;
 
-    my $greg_rd = ( $self->utc_rd_values() )[0];
+    my $greg_rd = ( $self->local_rd_values() )[0];
 
     my ( $year, $day_of_year ) = __rata_die_to_year_day(
 	$greg_rd + GREGORIAN_RATA_DIE_TO_SHIRE );
@@ -503,7 +503,7 @@ sub day_of_quarter {
     my ( $self ) = @_;
     my $clone = $self->clone();
     $clone->truncate( to => 'quarter' );
-    return ( $self->utc_rd_values() )[0] - ( $clone->utc_rd_values())[0] + 1;
+    return ( $self->local_rd_values() )[0] - ( $clone->local_rd_values())[0] + 1;
 }
 
 # sub doq;
@@ -766,7 +766,7 @@ foreach my $attr ( qw{
 		# TODO we do not, at this point in the coding, have date
 		# arithmetic. So we do it with rata die.
 		my ( $year, $day_of_year ) = __rata_die_to_year_day(
-		    ( $self->utc_rd_values() )[0] - $self->{wday} + 1 +
+		    ( $self->local_rd_values() )[0] - $self->{wday} + 1 +
 		    GREGORIAN_RATA_DIE_TO_SHIRE
 		);
 		my ( $month, $day ) = __day_of_year_to_date(
@@ -964,7 +964,7 @@ sub add {
 	    my $forward = $dur->is_forward_mode();
 	    my $holiday = $self->holiday();
 	    my $leap = $self->is_leap_year();
-	    my $orig_rd = my $shire_rd = ( $self->utc_rd_values() )[0] +
+	    my $orig_rd = my $shire_rd = ( $self->local_rd_values() )[0] +
 		GREGORIAN_RATA_DIE_TO_SHIRE;
 
 	    if ( my $months = delete $delta{months} ) {
