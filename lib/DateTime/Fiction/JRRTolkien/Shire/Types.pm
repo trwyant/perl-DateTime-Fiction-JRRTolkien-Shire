@@ -56,10 +56,13 @@ object_isa_type(
 declare(
     Duration	=>
     parent	=> t( 'Object' ),
-    inline	=> sub {
-	$_[0]->parent->inline_check( $_[1] ) .
-	" && $_[1]->isa( 'DateTime::Fiction::JRRTolkien::Shire::Duration' )";
-    },
+#    inline	=> sub {
+#	$_[0]->parent->inline_check( $_[1] ) .
+#	" && $_[1]->isa( 'DateTime::Fiction::JRRTolkien::Shire::Duration' )";
+#    },
+#   For some reason the above is a problem under 5.8.9. So:
+    where	=> sub { $_[0]->isa(
+	    'DateTime::Fiction::JRRTolkien::Shire::Duration' ) },
 );
 
 enum(
