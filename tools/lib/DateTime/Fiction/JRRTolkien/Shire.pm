@@ -3,7 +3,7 @@ package DateTime::Fiction::JRRTolkien::Shire;
 use vars qw($VERSION);
 use strict;
 use DateTime;
-our $VERSION = '0.02_01';
+our $VERSION = '0.900_04';
 
 # This assumes all the values in the info hashref are valid, and doesn't do validation
 # However, the day and month parameters will be given defaults if not present

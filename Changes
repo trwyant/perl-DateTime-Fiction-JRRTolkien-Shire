@@ -1,3 +1,6 @@
+0.900_04	2017-03-29	T. R. Wyant
+    Fix Specio wierdness under Perl 5.8.9. I hope.
+
 0.900_03	2017-03-21	T. R. Wyant
     Use local rather than UTC Rata Die in date calculations. The
     consequence of using UTC Rata Die was that that strftime() produced

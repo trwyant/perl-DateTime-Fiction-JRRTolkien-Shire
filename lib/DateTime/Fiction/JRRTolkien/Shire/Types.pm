@@ -18,7 +18,7 @@ use Specio::Library::Builtins;
 use Specio::Library::Numeric;
 use Specio::Library::String;
 
-our $VERSION = '0.900_03';
+our $VERSION = '0.900_04';
 
 declare(
     DayOfMonth	=>
