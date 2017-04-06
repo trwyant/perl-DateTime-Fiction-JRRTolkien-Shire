@@ -1,19 +1,10 @@
-0.900_04	2017-03-29	T. R. Wyant
+0.901		2017-04-06	T. R. Wyant
     Fix Specio wierdness under Perl 5.8.9. I hope.
 
-0.900_03	2017-03-21	T. R. Wyant
     Use local rather than UTC Rata Die in date calculations. The
     consequence of using UTC Rata Die was that that strftime() produced
     universal dates but local times.
 
-    Specify required module versions in 'use()'.
-
-0.900_02	2017-03-19	T. R. Wyant
-    Update dependency versions. The real issue was
-    Params::ValidationCompiler, but I did DateTime::Duration and
-    Date::Tolkien::Shire::Data as well.
-
-0.900_01	2017-03-17	T. R. Wyant
     Bring dependencies up to date.
 
     Add date and duration arithmetic. This leaves format_cldr() as the
