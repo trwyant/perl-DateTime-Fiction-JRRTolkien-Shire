@@ -1,3 +1,9 @@
+0.901_01	2017-04-15	T. R. Wyant
+    Bump requirement for Params::ValidationCompiler. DateTime needs
+    0.13, but we need 0.19 for some reason. Also made explicit
+    requirement for Specio::* the same as for Specio (0.180), which is
+    the same as DateTime.
+
 0.901		2017-04-06	T. R. Wyant
     Fix Specio wierdness under Perl 5.8.9. I hope.
 
