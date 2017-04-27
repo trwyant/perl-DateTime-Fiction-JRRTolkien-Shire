@@ -355,7 +355,12 @@ sub calendar_name {
     return 'Shire';
 }
 
-sub clone { return bless { %{ $_[0] } }, ref $_[0] } # Stolen from DateTime.pm
+sub clone {
+    my ( $self ) = @_;
+    my $clone = { %{ $self } };
+    $clone->{dt} = $self->{dt}->clone();
+    return bless $clone, ref $self;
+}
 
 # Get methods
 sub year {
@@ -1175,8 +1180,7 @@ sub STORABLE_freeze {
 
 sub STORABLE_thaw {
     my ( $self, undef, $serialized, $dt ) = @_;
-    my $info = Storable::thaw( $serialized );
-    @{ $self }{ keys %{ $info } } = values %{ $info };
+    %{ $self } = %{ Storable::thaw( $serialized ) };
     $self->{dt} = $dt;
     $self->{recalc} = 1;
     return $self;
