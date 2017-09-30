@@ -21,11 +21,14 @@ my %opt = (
 );
 
 GetOptions( \%opt,
-    qw{ output=s },
+    qw{ idempotent! output=s },
     help => sub { pod2usage( { -verbose => 2 } ) },
 ) or pod2usage( { -verbose => 0 } );
 
 unless ( '-' eq $opt{output} ) {
+    $opt{idempotent}
+	and -f $opt{output}
+	and exit;
     open my $fh, '>', $opt{output}
 	or die "Unable to open $opt{output}: $!\n";
     select $fh;
@@ -225,6 +228,13 @@ make-regression - Generate a regression test
 
 This option displays the documentation for this script. The script then
 exits.
+
+=head2 -idempotent
+
+If this Boolean option is asserted and the output file exists, it is not
+overwritten. This option is ignored if the output is F<->.
+
+The default is C<-noidempotent>.
 
 =head2 -output
 
