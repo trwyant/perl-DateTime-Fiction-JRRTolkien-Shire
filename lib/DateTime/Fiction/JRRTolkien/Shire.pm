@@ -1953,7 +1953,7 @@ Thomas R. Wyant, III F<wyant at cpan dot org>
 
 Copyright (c) 2003 Tom Braun. All rights reserved.
 
-Copyright (C) 2017 Thomas R. Wyant, III
+Copyright (C) 2017-2018 Thomas R. Wyant, III
 
 The calendar implemented on this module was created by J.R.R. Tolkien,
 and the copyright is still held by his estate.  The license and
