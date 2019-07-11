@@ -1857,11 +1857,12 @@ duration object is
 L<DateTime::Fiction::JRRTolkien::Shire::Duration|DateTime::Fiction::JRRTolkien::Shire::Duration>,
 which is B<not> a subclass of L<DateTime::Duration|DateTime::Duration>.
 
-The date portion of the math is done in the order L<month>, L<week>,
-L<year>, L<day>. Before adding (or subtracting) months or weeks from a
-date that is not part of any month (or week), that date will be adjusted
-forward or backward to the nearest date that is part of a month (or
-week). The direction of adjustment is specified by the
+The date portion of the math is done in the order L<month|/month>,
+L<week|/week>, L<year|/year>, L<day|/day>. Before adding (or
+subtracting) months or weeks from a date that is not part of any month
+(or week), that date will be adjusted forward or backward to the nearest
+date that is part of a month (or week). The direction of adjustment is
+specified by the
 L<DateTime::Fiction::JRRTolkien::Shire::Duration|DateTime::Fiction::JRRTolkien::Shire::Duration>
 object; see its documentation for the details. The order of operation
 was chosen to ensure that only one such adjustment would be necessary
@@ -1942,6 +1943,8 @@ in that regard.  These 100 and 400 year intervals occur at different
 times in the two calendars, so there is not a one to one correspondence
 of days regardless of years.  However, the variations follow a 400 year
 cycle.
+
+I<The "I" in the above is Tom Braun -- TRW>
 
 =head1 AUTHOR
 
