@@ -1978,6 +1978,10 @@ not a developer on the other classes in the DateTime project. For
 support on them, please see the support options in the DateTime
 documentation.
 
+Please file bug reports at
+L<https://github.com/trwyant/perl-DateTime-Fiction-JRRTolkien-Shire/issues>,
+or in electronic mail to F<wyant@cpan.org>.
+
 =head1 BIBLIOGRAPHY
 
 Tolkien, J. R. R. I<Return of the King>.  New York: Houghton Mifflin
