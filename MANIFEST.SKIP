@@ -21,6 +21,7 @@ CVS/
 \.swp$
 ^tools/
 ^TODO$
+^\.travis\.yml$
 ^xt/author/optionals/
 ^xt/author/regression.t
 ^DateTime-Fiction-JRRTolkien-Shire
