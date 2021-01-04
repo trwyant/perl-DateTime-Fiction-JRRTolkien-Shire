@@ -1,3 +1,6 @@
+0.904_02	2021-01-04	T. R. Wyant
+    Correct tests for tweaks in Afteryule event text.
+
 0.904_01	2021-01-04	T. R. Wyant
     Add Travis CI testing.
 
