@@ -33,7 +33,7 @@ $shire = DateTime::Fiction::JRRTolkien::Shire->new(
 is( $shire->on_date, <<'EOD' );
 Sunday 15 Afteryule 1419
 
-The Bridge of Khazad-dum, and the fall of Gandalf, 1419.
+The Bridge of Khazad-dum, and fall of Gandalf, 1419.
 EOD
 
 $shire = DateTime::Fiction::JRRTolkien::Shire->new(
@@ -46,7 +46,7 @@ $shire = DateTime::Fiction::JRRTolkien::Shire->new(
 is( $shire->on_date, <<'EOD' );
 Sunnendei 15 Afteryule 1419
 
-The Bridge of Khazad-dum, and the fall of Gandalf, 1419.
+The Bridge of Khazad-dum, and fall of Gandalf, 1419.
 EOD
 
 $shire = DateTime::Fiction::JRRTolkien::Shire->new(
@@ -59,5 +59,5 @@ $shire = DateTime::Fiction::JRRTolkien::Shire->new(
 is( $shire->on_date, <<"EOD" );
 Sunday 15 Afteryule 1419
 
-The Bridge of Khazad-d${u_circ}m, and the fall of Gandalf, 1419.
+The Bridge of Khazad-d${u_circ}m, and fall of Gandalf, 1419.
 EOD
