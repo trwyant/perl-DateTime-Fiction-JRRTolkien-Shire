@@ -1915,7 +1915,7 @@ object or a L<DateTime|DateTime> object.
 
 =head1 NOTE: YEAR CALCULATION
 
-L<http://www.glyphweb.com/arda/f/fourthage.html> references a letter sent
+L<https://www.glyphweb.com/arda/f/fourthage.html> references a letter sent
 by Tolkien in 1958 in which he estimates approximately 6000 years have
 passed since the War of the Ring and the end of the Third Age.  (Thanks
 to Danny O'Brien from sending me this link).  I took this approximate as
@@ -1987,7 +1987,7 @@ electronic mail to the author.
 Tolkien, J. R. R. I<Return of the King>.  New York: Houghton Mifflin
 Press, 1955.
 
-L<http://www.glyphweb.com/arda/f/fourthage.html>
+L<https://www.glyphweb.com/arda/f/fourthage.html>
 
 =head1 SEE ALSO
 
