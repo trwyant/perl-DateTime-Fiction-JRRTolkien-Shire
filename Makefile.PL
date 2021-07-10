@@ -47,16 +47,14 @@ my %args = (
 $mmv >= 6.31
     and $args{LICENSE} = 'perl';
 
-$mmv >= 6.4501
-    and $args{META_MERGE} = {
-	build_requires	=> {
-	    'Test::More'	=> 0,
-	},
+if ( $mmv >= 6.4501 ) {
+    $args{META_ADD} = {
+	no_index	=> no_index(),
+	provides(),
+    };
+    $args{META_MERGE} = {
 	'meta-spec'	=> {
 	    version	=> 2,
-	},
-	no_index	=> {
-	    directory	=> [ qw{ inc t xt } ],
 	},
 	resources	=> {
 	    bugtracker	=> {
@@ -71,8 +69,8 @@ $mmv >= 6.4501
 		web	=> 'https://github.com/trwyant/perl-DateTime-Fiction-JRRTolkien-Shire',
 	    },
 	},
-	provides(),
-};
+    };
+}
 
 $mmv >= 6.4701
     and $args{MIN_PERL_VERSION} = 5.008004;
@@ -136,21 +134,27 @@ EOD
 
 sub no_index {
     return +{
-	directory	=> [ qw{ inc t xt } ],
+	directory	=> [ qw{ inc t tools xt } ],
     };
 }
 
 sub provides {
-    -d 'lib'
-	or return;
+    my $provides;
     local $@ = undef;
-    my $provides = eval {
-	require Module::Metadata;
-	Module::Metadata->provides( version => 2, dir => 'lib' );
-    } or return;
 
     eval {
 	require CPAN::Meta;
+	require ExtUtils::Manifest;
+	require Module::Metadata;
+
+	my $manifest;
+	{
+	    local $SIG{__WARN__} = sub {};
+	    $manifest = ExtUtils::Manifest::maniread();
+	}
+	keys %{ $manifest || {} }
+	    or return;
+
 	# Skeleton so we can use should_index_file() and
 	# should_index_package().
 	my $meta = CPAN::Meta->new( {
@@ -159,11 +163,22 @@ sub provides {
 		no_index	=> no_index(),
 	    },
 	);
-	foreach my $pkg ( keys %{ $provides } ) {
-	    $meta->should_index_package( $pkg )
-		and $meta->should_index_file( $provides->{$pkg}{file} )
-		and next;
-	    delete $provides->{$pkg};
+
+	# The Module::Metadata docs say not to use
+	# package_versions_from_directory() directly, but the 'files =>'
+	# version of provides() is broken, and has been known to be so
+	# since 2014, so it's not getting fixed any time soon. So:
+
+	foreach my $fn ( sort keys %{ $manifest } ) {
+	    $fn =~ m/ [.] pm \z /smx
+		or next;
+	    my $pvd = Module::Metadata->package_versions_from_directory(
+		undef, [ $fn ] );
+	    foreach my $pkg ( keys %{ $pvd } ) {
+		$meta->should_index_package( $pkg )
+		    and $meta->should_index_file( $pvd->{$pkg}{file} )
+		    and $provides->{$pkg} = $pvd->{$pkg};
+	    }
 	}
 
 	1;

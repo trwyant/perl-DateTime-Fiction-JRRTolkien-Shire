@@ -12,7 +12,8 @@ eval {
 
 my $tpm = Test::Prereq::Meta->new(
     accept	=> [ qw{
-	CPAN::Meta Module::Metadata Storable Test::MockTime
+	CPAN::Meta ExtUtils::Manifest Module::Metadata
+	Storable Test::MockTime
 	} ],
 );
 
