@@ -1,5 +1,6 @@
 Changes
 eg/date-convert
+eg/on-date
 eg/README
 lib/DateTime/Fiction/JRRTolkien/Shire.pm
 lib/DateTime/Fiction/JRRTolkien/Shire/Duration.pm
