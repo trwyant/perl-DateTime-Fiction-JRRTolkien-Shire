@@ -63,6 +63,8 @@ sub compute_environment {
         MY_IS_GITHUB_ACTION => 1,
         MY_IS_UNIX          => $is_unix,
         MY_IS_WINDOWS       => $is_windows,
+        MY_TOOLCHAIN_EUMM   => -e 'Makefile.PL' ? 1 : '',
+        MY_TOOLCHAIN_MB     => -e 'Build.PL' ? 1 : '',
         MY_WANT_MODULES     => "@want_modules",
     );
 

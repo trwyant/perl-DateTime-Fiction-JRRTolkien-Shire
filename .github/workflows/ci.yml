@@ -94,6 +94,8 @@ jobs:
         echo MY_IS_GITHUB_ACTION=${{ env.MY_IS_GITHUB_ACTION }}
         echo MY_IS_UNIX=${{ env.MY_IS_UNIX }}
         echo MY_IS_WINDOWS=${{ env.MY_IS_WINDOWS }}
+        echo MY_TOOLCHAIN_EUMM=${{ env.MY_TOOLCHAIN_EUMM }}
+        echo MY_TOOLCHAIN_MB=${{ env.MY_TOOLCHAIN_MB }}
         echo MY_WANT_MODULES=${{ env.MY_WANT_MODULES }}
 
     # The current versions of various non-core toolchain modules have
@@ -109,12 +111,14 @@ jobs:
         cpanm --with-configure --notest --installdeps .
 
     - name: Run ExtUtils::MakeMaker tests
+      if: env.MY_TOOLCHAIN_EUMM
       run: |
         perl Makefile.PL
         perl .github/workflows/make.PL
         perl .github/workflows/make.PL test
 
     - name: Run Module::Build tests
+      if: env.MY_TOOLCHAIN_MB
       run: |
         perl Build.PL
         ./Build
