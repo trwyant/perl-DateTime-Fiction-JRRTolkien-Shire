@@ -1970,15 +1970,12 @@ merchantability or fitness for a particular purpose.
 
 =head1 SUPPORT
 
-Support on this module may be obtained by emailing me. However, I am
-not a developer on the other classes in the DateTime project. For
-support on them, please see the support options in the DateTime
-documentation.
-
 Support is by the author. Please file bug reports at
-L<https://rt.cpan.org/Public/Dist/Display.html?Name=DateTime-Fiction-JRRTolkien-Shire>,
-L<https://github.com/trwyant/perl-DateTime-Fiction-JRRTolkien-Shire/issues>, or in
+L<https://github.com/trwyant/perl-DateTime-Fiction-JRRTolkien-Shire/issues> or in
 electronic mail to the author.
+
+For support of other L<DateTime|DateTime> modules, please see the
+support options in the documentation for that module.
 
 =head1 BIBLIOGRAPHY
 

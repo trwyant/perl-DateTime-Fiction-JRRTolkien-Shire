@@ -58,8 +58,7 @@ if ( $mmv >= 6.4501 ) {
 	},
 	resources	=> {
 	    bugtracker	=> {
-		web	=> 'https://rt.cpan.org/Public/Dist/Display.html?Name=DateTime-Fiction-JRRTolkien-Shire',
-		# web	=> 'https://github.com/trwyant/perl-DateTime-Fiction-JRRTolkien-Shire/issues',
+		web	=> 'https://github.com/trwyant/perl-DateTime-Fiction-JRRTolkien-Shire/issues',
                 mailto  => 'harryfmudd@comcast.net',
             },
 	    license	=> 'http://dev.perl.org/licenses/',

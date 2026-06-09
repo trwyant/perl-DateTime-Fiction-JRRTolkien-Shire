@@ -471,8 +471,7 @@ L<DateTime::Duration|DateTime::Duration>
 =head1 SUPPORT
 
 Support is by the author. Please file bug reports at
-L<https://rt.cpan.org/Public/Dist/Display.html?Name=DateTime-Fiction-JRRTolkien-Shire>,
-L<https://github.com/trwyant/perl-DateTime-Fiction-JRRTolkien-Shire/issues>, or in
+L<https://github.com/trwyant/perl-DateTime-Fiction-JRRTolkien-Shire/issues> or in
 electronic mail to the author.
 
 =head1 AUTHOR
