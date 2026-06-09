@@ -36,7 +36,7 @@ my %args = (
     },
     AUTHOR => [
 	'Tom Braun <tbraun@pobox.com>',
-	'Tom Wyant (wyant at cpan dot org)',
+	'Tom Wyant (harryfmudd at comcast dot net)',
     ],
     ABSTRACT	=> q<DateTime implementation of the Shire Calendar from JRR Tolkien's classic, "Lord of the Rings".>,
     realclean	=> {
@@ -60,7 +60,7 @@ if ( $mmv >= 6.4501 ) {
 	    bugtracker	=> {
 		web	=> 'https://rt.cpan.org/Public/Dist/Display.html?Name=DateTime-Fiction-JRRTolkien-Shire',
 		# web	=> 'https://github.com/trwyant/perl-DateTime-Fiction-JRRTolkien-Shire/issues',
-                mailto  => 'wyant@cpan.org',
+                mailto  => 'harryfmudd@comcast.net',
             },
 	    license	=> 'http://dev.perl.org/licenses/',
 	    repository	=> {

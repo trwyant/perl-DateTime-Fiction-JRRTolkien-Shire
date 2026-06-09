@@ -1947,7 +1947,7 @@ I<The "I" in the above is Tom Braun -- TRW>
 
 Tom Braun <tbraun@pobox.com>
 
-Thomas R. Wyant, III F<wyant at cpan dot org>
+Thomas R. Wyant, III F<harryfmudd at comcast dot net>
 
 =head1 COPYRIGHT AND LICENSE
 
