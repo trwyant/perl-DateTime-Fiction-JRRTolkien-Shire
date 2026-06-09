@@ -79,8 +79,8 @@ sub want_modules {
         or $perl_ver = THIS_PERL;
     foreach (
 	[ qw{ 5.012000  } ],
-	[ qw{ 5.010001 Test::Deep@0.119 Pod::Text@4.14 } ],
-	[ qw{ 5.008004 Test::Deep@0.119 Pod::Text@4.14 XSLoader@0.10 } ],
+	[ qw{ 5.010001 Test::Deep@0.119 Pod::Text@4.14 Test::Fatal@0.017 } ],
+	[ qw{ 5.008004 Test::Deep@0.119 Test::Fatal@0.017 Pod::Text@4.14 XSLoader@0.10 } ],
     ) {
         my ( $version, @want ) = @{ $_ };
         $perl_ver >= $version
