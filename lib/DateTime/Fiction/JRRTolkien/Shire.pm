@@ -233,7 +233,7 @@ sub _new {
 	    my ( $class, %arg ) = @_;
 
 	    my %my_arg;
-	    exists $my_arg{$_} and $my_arg{$_} = delete $arg{$_}
+	    exists $arg{$_} and $my_arg{$_} = delete $arg{$_}
 		for qw{ accented traditional };
 
 	    %my_arg = $validator->( %my_arg );
