@@ -1,4 +1,4 @@
-0.909_01	2026-06-24	T. R. Wyant
+0.910		2026-07-02	T. R. Wyant
     Methods now(), today(), and from_epoch() now accept all documented args.
     Previously, they did not accept 'accented' and 'traditional', though the
     documentation said they did. Add tests to ensure that these, plus
